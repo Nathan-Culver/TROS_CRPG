@@ -126,7 +126,7 @@ class WorldCrafting {
     const x=Math.floor(player.center.x/16),y=Math.floor(player.center.y/16),symbol=l_New_Layer_1[y]?.[x],column=(symbol-1)%39,row=Math.floor((symbol-1)/39);
     if(row<9||row>12||column<14||column>17)return;
     const state=this.state(c);state.grassProgress=(state.grassProgress||0)+distance;
-    while(state.grassProgress>=64){state.grassProgress-=64;if(Math.random()<.03){const herb=ALCHEMY_INGREDIENTS[Math.floor(Math.random()*48)];Crafting.add(c,herb.id,herb.name);this.commit(`You notice ${herb.name} in the grass and gather it.`);}}
+    while(state.grassProgress>=64){state.grassProgress-=64;if(Math.random()<.03){const herb=ALCHEMY_INGREDIENTS[Math.floor(Math.random()*48)];if(InventoryLoad.total([...c.inventoryItems,{id:herb.id,name:herb.name,quantity:1}])<=InventoryLoad.stats(c).capacity){Crafting.add(c,herb.id,herb.name);this.commit(`You notice ${herb.name} in the grass and gather it.`);}else this.message('Your pack is full; the herb stays in the grass.');}}
   }
   harvest(node) {
     if(!node||this.distance(node)>this.range||this.depleted(node))throw new Error('This resource is depleted. Explore elsewhere and return later.');
@@ -174,7 +174,7 @@ class WorldCrafting {
   openSmith() {
     const c=gameUI.character,{button,finish}=this.showDialog('Village Smith','A working forge, furnaces, welding hearth and alchemy bench stand beside the smith. Rent access for this visit, or buy tools to take into the wilds.');
     button(this.rental===c?'Workshop already rented':'Rent workshop · 1 silver',()=>{if(this.rental===c)return 'Your current rental is still active.';this.pay(48);this.rental=c;return 'Workshop rented. Walk to its forge or alchemy bench and press E. Rental ends when you leave the workshop grounds.';});
-    for(const [id,name,price] of [['tool-pickaxe','Pickaxe',12],['tool-axe','Woodcutting axe',12],['tool-alchemy','Alchemy tools',24]])button(`Buy ${name} · ${formatCurrency(price)}`,()=>{if(Crafting.count(c,id))return `You already carry ${name}.`;this.pay(price);Crafting.add(c,id,name);return `${name} added to your carried inventory.`;});
+    for(const [id,name,price] of [['tool-pickaxe','Pickaxe',12],['tool-axe','Woodcutting axe',12],['tool-alchemy','Alchemy tools',24]])button(`Buy ${name} · ${formatCurrency(price)}`,()=>{if(Crafting.count(c,id))return `You already carry ${name}.`;InventoryLoad.check(c,[...c.inventoryItems,{id,name,quantity:1}]);this.pay(price);Crafting.add(c,id,name);return `${name} added to your carried inventory.`;});
     finish();
   }
   pay(amount) {const c=gameUI.character;Crafting.ready(c);if(c.wealthTotal<amount)throw new Error(`You need ${formatCurrency(amount)}.`);c.wealthTotal-=amount;c.remainingWealth=formatCurrency(c.wealthTotal);}
@@ -220,6 +220,18 @@ class WorldCrafting {
       ctx.save();ctx.globalAlpha*=.7*(1-life);ctx.fillStyle=n%2?'#ffce67':'#ed7632';ctx.fillRect(x,y,1,1);ctx.restore();
     }
   }
+  drawFireStation(ctx,index,x,ground,width,time=performance.now()) {
+    this.drawCraftProp(ctx,index,x,ground,width);
+    if(this.fireMotion.matches)return;
+    const regions={0:[80,245,110,105],1:[70,218,100,112],2:[78,28,145,72],3:[88,200,125,142],4:[98,95,166,140]},region=regions[index];if(!region)return;
+    this.stationFireMasks||={};let mask=this.stationFireMasks[index];
+    if(mask===undefined){try{const canvas=document.createElement('canvas');canvas.width=region[2];canvas.height=region[3];const c=canvas.getContext('2d'),[sx,sy]=this.craftFrames[index];c.drawImage(this.craftSprite,sx+region[0],sy+region[1],region[2],region[3],0,0,region[2],region[3]);const pixels=c.getImageData(0,0,canvas.width,canvas.height);for(let n=0;n<pixels.data.length;n+=4){const r=pixels.data[n],g=pixels.data[n+1],b=pixels.data[n+2];if(r<120||r<g*1.2||r<b*1.8)pixels.data[n+3]=0;}c.putImageData(pixels,0,0);mask=canvas;}catch{mask=null;}this.stationFireMasks[index]=mask;}
+    const [, ,sw,sh]=this.craftFrames[index],scale=width/sw,dx=x-width/2+region[0]*scale,dy=ground-sh*scale+region[1]*scale,phase=Math.floor(time/100)*.8+index;
+    ctx.save();ctx.globalAlpha*=.18+.1*Math.sin(phase);ctx.globalCompositeOperation='screen';
+    if(mask)ctx.drawImage(mask,dx+Math.round(Math.sin(phase)*.5),dy,region[2]*scale,region[3]*scale);else{ctx.fillStyle='#f6a233';ctx.fillRect(dx,dy,region[2]*scale,region[3]*scale);}
+    ctx.restore();
+    for(let n=0;n<2;n++){const life=(Math.floor(time/100)+n*7+index*3)%17/17;ctx.save();ctx.globalAlpha*=.45*(1-life);ctx.fillStyle='#f4b557';ctx.fillRect(Math.round(dx+region[2]*scale*(n+.5)/2+Math.sin(phase+n)),Math.round(dy-life*6),1,1);ctx.restore();}
+  }
   draw(ctx,foreground=false) {
     if(!gameUI.character)return;
     const near=this.nearby();
@@ -235,8 +247,8 @@ class WorldCrafting {
       else if(o.kind==='station'||o.kind==='fire') {
         if(this.craftSprite.complete&&this.craftSprite.naturalWidth) {
           if(o.kind==='fire')this.drawFirePit(ctx);
-          else if(o.station==='forge'){this.drawCraftProp(ctx,3,-5,1,28);this.drawCraftProp(ctx,5,9,6,18);}
-          else this.drawCraftProp(ctx,{bloomery:0,cementation:1,crucible:2,welding:4,kit:6}[o.station],0,4,o.station==='kit'?32:30);
+          else if(o.station==='forge'){this.drawFireStation(ctx,3,-5,1,28);this.drawCraftProp(ctx,5,9,6,18);}
+          else if(o.station==='kit')this.drawCraftProp(ctx,6,0,4,32);else this.drawFireStation(ctx,{bloomery:0,cementation:1,crucible:2,welding:4}[o.station],0,4,30);
         }
       }
       else if(native&&o.kind==='herb'){ctx.drawImage(this.natureSprite,256+(o.ingredient%11)*32,96,32,48,-8,-21,16,24);}

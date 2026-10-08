@@ -45,7 +45,7 @@
     controls.querySelector('.touch-dpad').hidden=!onMap
     controls.querySelector('.touch-system').hidden=battleSystem.isActive
     interactButton.hidden=!onMap
-    backButton.disabled=onMap
+    backButton.disabled=onMap&&!window.Camping?.placement
     document.body.classList.toggle('touch-playing',touchViewport.matches&&playing&&!battleSystem.isActive)
     const saves=gameUI.mode==='menu'&&['browserSaves','exportSaves'].includes(gameUI.activeSheetTab)
     document.body.classList.toggle('touch-save-screen',touchViewport.matches&&saves)
@@ -114,6 +114,7 @@
   })
   bindAction('touch-character', () => {
     stopMovement()
+    if(window.Camping?.placement){Camping.cancel();sync();return}
     if(battleSystem.isActive&&!battleSystem.inventoryPopup.hidden)battleSystem.closeBattleInventory()
     else if(gameUI.mode==='world')worldCrafting.closeDialog()
     else if(gameUI.mode==='menu')gameUI.closeCharacterMenu()
@@ -140,6 +141,7 @@
   const observer = new MutationObserver(sync)
   for (const id of ['start-screen','character-builder','character-menu','battle-screen','battle-inventory-popup']) observer.observe(document.getElementById(id), {attributes:true,attributeFilter:['hidden','aria-hidden']})
   observer.observe(document.body, {childList:true})
+  if(window.Camping)observer.observe(Camping.placementBar,{attributes:true,attributeFilter:['hidden']})
   observer.observe(gameUI.sheetTabs,{subtree:true,childList:true,attributes:true,attributeFilter:['aria-selected']})
   sync()
 })()

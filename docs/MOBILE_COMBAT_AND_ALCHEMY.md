@@ -46,3 +46,7 @@ Regression checks are in `tools/test_mobile_crafting.cjs` and `tools/test_crafti
 ## Animated fire pit
 
 The campsite fire pit animates its existing flame pixels at ten stepped frames per second, keeping its logs and stone ring still. A subdued pixel glow flickers and four embers rise/fade. Off-screen rendering is still culled and no particle list accumulates. Reduced-motion preferences retain the static flame and subdued glow. Gathering, charcoal production, depth order and the collision footprint are unchanged. Rendering, static reduced-motion frames, collision and script-error checks are in `tools/test_fire_animation.cjs`. Mobile system buttons are labeled simply L and R.
+
+## Carrying and portable campsites
+
+See [CARRYING_AND_CAMPSITES.md](CARRYING_AND_CAMPSITES.md) for the new weight/capacity and fatigue rules, physical storage, campsite purchasing/deployment/packing, save persistence and animations on fire-using stations.

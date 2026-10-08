@@ -1211,7 +1211,8 @@ class BattleSystem {
       }
     }
 
-    const fatigueInterval = Math.max(1, this.getConditionTrait(combatant, 'endurance') * 2 - combatant.encumbrancePenalty)
+    const load = combatant === this.player ? InventoryLoad.stats(this.character) : {cpPenalty:0,fatiguePenalty:0}
+    const fatigueInterval = Math.max(1, this.getConditionTrait(combatant, 'endurance') * 2 - combatant.encumbrancePenalty - load.cpPenalty - load.fatiguePenalty)
     if (combatant.roundsActive > 0 && combatant.roundsActive % fatigueInterval === 0) {
       conditions.fatigue++
       this.addLog(`${combatant.name} gains 1 Fatigue after ${fatigueInterval} active round${fatigueInterval === 1 ? '' : 's'}.`)
