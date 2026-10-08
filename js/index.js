@@ -398,7 +398,7 @@ function animate(backgroundCanvas, foregroundCanvas) {
     const previousY = player.y
 
     player.handleInput(keys)
-    player.update(deltaTime, collisionBlocks)
+    player.update(deltaTime, collisionBlocks.concat(window.worldCrafting?.getCollisionBlocks()||[]))
 
     const travelDistance = Math.hypot(
       player.x - previousX,
@@ -429,6 +429,7 @@ function animate(backgroundCanvas, foregroundCanvas) {
   c.drawImage(backgroundCanvas, 0, 0, MAP_WIDTH, MAP_HEIGHT)
   window.worldCrafting?.draw(c)
   player.draw(c)
+  window.worldCrafting?.draw(c,true)
   c.drawImage(foregroundCanvas, 0, 0, MAP_WIDTH, MAP_HEIGHT)
 
   // Updates every falling leaf and removes leaves that have completed their animation.

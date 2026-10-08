@@ -74,6 +74,19 @@ class WorldCrafting {
     return s.world;
   }
   activeObjects(c=gameUI.character) {const state=this.state(c);return this.objects.filter(o=>!o.home||state?.built.includes(o.station));}
+  objectBounds(o) {
+    // Ground footprints block feet, while the canopy/upper artwork can overlap.
+    // Unbuilt plots never reach this method through activeObjects().
+    if(o.kind==='station')return {x:o.x-(o.station==='forge'?19:15),y:o.y-12,width:o.station==='forge'?38:30,height:18};
+    if(o.kind==='fire')return {x:o.x-11,y:o.y-8,width:22,height:12};
+    if(o.kind==='timber')return {x:o.x-5,y:o.y-6,width:10,height:10};
+    if(o.kind==='ore') {
+      if(o.existing&&o.interactBounds){const b=o.interactBounds;return {x:b.left+3,y:b.bottom-16,width:b.right-b.left-6,height:14};}
+      return {x:o.x-11,y:o.y-13,width:22,height:17};
+    }
+    return null;
+  }
+  getCollisionBlocks(c=gameUI.character) {return this.activeObjects(c).map(o=>this.objectBounds(o)).filter(Boolean);}
   distance(o) {
     const bounds=o.interactBounds;
     if(bounds)return Math.hypot(Math.max(bounds.left-player.center.x,0,player.center.x-bounds.right),Math.max(bounds.top-player.center.y,0,player.center.y-bounds.bottom));
@@ -183,10 +196,13 @@ class WorldCrafting {
     const [sx,sy,sw,sh]=this.craftFrames[index],height=width*sh/sw;
     ctx.drawImage(this.craftSprite,sx,sy,sw,sh,x-width/2,ground-height,width,height);
   }
-  draw(ctx) {
+  draw(ctx,foreground=false) {
     if(!gameUI.character)return;
     const near=this.nearby();
     for(const o of this.activeObjects().sort((a,b)=>a.y-b.y)) {
+      // Draw tall new objects in front of a character standing behind them.
+      const solid=!o.existing&&this.objectBounds(o),inFront=solid&&o.y>player.y+player.height;
+      if(foreground?!inFront:inFront)continue;
       if(o.x<camera.x-32||o.y<camera.y-32||o.x>camera.x+VIEWPORT_WIDTH+32||o.y>camera.y+VIEWPORT_HEIGHT+32)continue;
       const used=this.depleted(o);ctx.save();ctx.translate(o.x,o.y);ctx.globalAlpha=used ? 0.35 : 1;
       ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(-7,-1,14,4);

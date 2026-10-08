@@ -5,7 +5,8 @@ body.touch-device canvas { width:100vw;height:100dvh;aspect-ratio:auto; }
 .world-route-hint {left:calc(var(--map-left,0px) + 12px);top:calc(var(--map-top,0px) + 12px);}
 .world-interaction-hint {bottom:calc(var(--map-bottom,0px) + 48px);}
 .world-craft-toast {top:calc(var(--map-top,0px) + 48px);}
-.start-screen #begin-game {margin-top:22px;min-height:48px;padding:12px 24px;font:16px Georgia,serif;}
+.start-screen #begin-game {display:none;margin-top:22px;min-height:48px;padding:12px 24px;font:16px Georgia,serif;}
+body.touch-device .start-screen #begin-game {display:inline-flex;}
 .start-crest {width:120px;height:120px;border:0;transform:none;background:none;margin-bottom:14px;}
 .menu-icon {width:22px;height:22px;flex:none;display:inline-block;vertical-align:middle;pointer-events:none;}
 #begin-game,#close-character-menu,.craft-subtabs button {display:inline-flex;align-items:center;justify-content:center;gap:8px;}
