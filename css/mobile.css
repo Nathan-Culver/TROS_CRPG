@@ -6,6 +6,10 @@ body.touch-device canvas { width:100vw;height:100dvh;aspect-ratio:auto; }
 .world-interaction-hint {bottom:calc(var(--map-bottom,0px) + 48px);}
 .world-craft-toast {top:calc(var(--map-top,0px) + 48px);}
 .start-screen #begin-game {margin-top:22px;min-height:48px;padding:12px 24px;font:16px Georgia,serif;}
+.start-crest {width:120px;height:120px;border:0;transform:none;background:none;margin-bottom:14px;}
+.menu-icon {width:22px;height:22px;flex:none;display:inline-block;vertical-align:middle;pointer-events:none;}
+#begin-game,#close-character-menu,.craft-subtabs button {display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.control-icon {width:26px;height:26px;display:block;margin:auto;pointer-events:none;}
 #close-character-menu {min-height:44px;padding:8px 14px;cursor:pointer;}
 #touch-controls {position:fixed;inset:0;z-index:25;pointer-events:none;user-select:none;-webkit-user-select:none;}
 #touch-controls[hidden] {display:none;}
@@ -17,8 +21,8 @@ body.touch-device canvas { width:100vw;height:100dvh;aspect-ratio:auto; }
 .touch-up {grid-area:1/2;}.touch-left {grid-area:2/1;}.touch-right {grid-area:2/3;}.touch-down {grid-area:3/2;}
 .touch-pad-center {grid-area:2/2;border:1px solid rgba(233,216,170,.2);background:rgba(24,29,36,.25);border-radius:50%;margin:7px;}
 .touch-actions {position:absolute;right:max(12px,env(safe-area-inset-right));bottom:max(24px,calc(env(safe-area-inset-bottom) + 12px));display:flex;gap:12px;align-items:flex-end;}
-.touch-actions button {width:62px;height:62px;border-radius:50%;display:grid;align-content:center;justify-items:center;gap:2px;}
-.touch-actions strong {font-size:22px;}.touch-actions span {font-size:10px;}.touch-actions #touch-interact {margin-bottom:34px;}
+.touch-actions button {position:relative;width:62px;height:62px;border-radius:50%;display:grid;align-content:center;justify-items:center;gap:3px;}
+.touch-actions strong {position:absolute;top:4px;right:8px;font-size:11px;line-height:1;}.touch-actions span {font-size:10px;}.touch-actions #touch-interact {margin-bottom:34px;}
 body.touch-device .world-route-hint {top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));font-size:11px;}
 body.touch-device .world-interaction-hint {bottom:max(170px,calc(env(safe-area-inset-bottom) + 165px));font-size:12px;padding:6px 10px;max-width:94vw;}
 body.touch-device .world-craft-toast {top:max(50px,calc(env(safe-area-inset-top) + 44px));font-size:13px;}
@@ -66,10 +70,10 @@ body.touch-device .press-space,body.touch-device .keyboard-return-hint {display:
  .equipment-shop-controls {grid-template-columns:minmax(0,1fr) 64px;}
  .equipment-shop-controls>button {grid-column:1/-1;}
  .gift-flaw-grid {grid-template-columns:minmax(0,1fr);}
- .start-crest {width:68px;height:68px;}
+ .start-crest {width:96px;height:96px;}
 }
 @media (any-pointer:coarse) and (max-height:450px) {
  .touch-dpad {grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:2px;bottom:max(8px,env(safe-area-inset-bottom));}
  body.touch-device .world-interaction-hint {bottom:14px;max-width:calc(100vw - 340px);}
- .battle-stage {height:120px;}.start-crest {width:48px;height:48px;}.start-screen {padding:10px;gap:6px;}.start-screen h1 {font-size:32px;}.start-screen #begin-game {margin-top:8px;}
+ .battle-stage {height:120px;}.start-crest {width:64px;height:64px;}.start-screen {padding:10px;gap:6px;}.start-screen h1 {font-size:32px;}.start-screen #begin-game {margin-top:8px;}
 }

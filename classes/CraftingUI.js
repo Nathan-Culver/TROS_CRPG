@@ -8,7 +8,7 @@ GameUI.prototype.createCraftingSection = function(c) {
   const button=(parent,text,fn,disabled=false) => {const b=craftNode('button',text);b.type='button';b.disabled=disabled;b.addEventListener('click',()=>act(fn));parent.append(b);return b;};
   const tabs=craftNode('nav',null,'craft-subtabs');tabs.setAttribute('aria-label','Crafting disciplines');
   const body=craftNode('div');section.append(tabs,body);
-  for(const [id,name] of [['alchemy','Alchemy'],['smithing','Blacksmithing'],['supplies','World & Supplies']]) { const b=craftNode('button',name);b.type='button';b.classList.toggle('active',(this.craftPage||'alchemy')===id);b.addEventListener('click',()=>{this.craftPage=id;this.renderCharacterSheet();});tabs.append(b); }
+  for(const [id,name] of [['alchemy','Alchemy'],['smithing','Blacksmithing'],['supplies','World & Supplies']]) { const b=craftNode('button',name), icon=craftNode('img',null,'menu-icon');icon.src=`./images/ui/${id}.svg`;icon.alt='';icon.width=22;icon.height=22;icon.draggable=false;b.prepend(icon);b.type='button';b.classList.toggle('active',(this.craftPage||'alchemy')===id);b.addEventListener('click',()=>{this.craftPage=id;this.renderCharacterSheet();});tabs.append(b); }
   const skill=craftNode('div',null,'craft-toolbar');body.append(skill);
   if((this.craftPage||'alchemy')!=='supplies') {
     const alchemy=(this.craftPage||'alchemy')==='alchemy', rank=alchemy?s.alchemy:s.smithing, cost=alchemy||rank<6?2:rank-3;

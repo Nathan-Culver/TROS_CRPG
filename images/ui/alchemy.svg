@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+<title>Alchemy</title>
+<desc>Editable vector interface artwork for The Riddle of Steel. Paths and colors can be changed independently of the game sprites.</desc>
+<g stroke="#ead9af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3h10M13 3v9L6 24c-1 2 0 5 3 5h14c3 0 4-3 3-5l-7-12V3M10 20h12"/><path d="M10 23h12l2 3H8Z" fill="#70a999" stroke="none"/><circle cx="16" cy="16" r="1" fill="#ead9af" stroke="none"/></g>
+</svg>

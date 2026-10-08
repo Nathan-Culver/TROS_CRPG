@@ -43,3 +43,7 @@ Old ZIP backups, scratch output and the inactive nested `TROS_TD_CRPG` copy are 
 ## Mobile play
 
 Tap Begin your journey to start. Touch devices display a translucent direction pad and Interact/Character buttons on the map. Hold to walk, release to stop. Use Return to world to close the character sheet. Portrait and landscape layouts adapt to your screen; battle and crafting panels scroll and remain touch accessible. See [Mobile support](docs/MOBILE_SUPPORT.md).
+
+## Editable interface artwork
+
+The crest, touch controls and crafting/menu icons use small editable SVG files in `images/ui/`. Detailed sprites and textures remain bitmaps to preserve their pixel artwork and mobile performance. The armor coverage diagram remains interactive inline SVG. See [SVG interface artwork](docs/SVG_INTERFACE.md).

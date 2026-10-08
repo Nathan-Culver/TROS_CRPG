@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="./css/battle.css?v=visible-battle-actions-v4-2026-08-09" />
 <link rel="stylesheet" href="./css/crafting.css?v=2026-10-07" />
 <link rel="stylesheet" href="./css/world-crafting.css?v=2026-10-07-world" />
-<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-touch" />
+<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-svg-ui" />
 <style>
   * {
     box-sizing: border-box;
@@ -33,11 +33,11 @@
 <div class="map-hint" aria-hidden="true">WASD Move&nbsp;&nbsp;|&nbsp;&nbsp;E Interact&nbsp;&nbsp;|&nbsp;&nbsp;C Character / Crafting</div>
 
 <section id="start-screen" class="game-overlay start-screen" aria-label="Start menu">
-  <div class="start-crest"><span>TROS</span></div>
+  <img class="start-crest" src="./images/ui/title-crest.svg" alt="TROS crest" width="120" height="120" />
   <p class="eyebrow">Roleplaying with an edge</p>
   <h1>The Riddle of Steel</h1>
   <p class="start-subtitle">A tale is forged by the choices made before steel is drawn.</p>
-  <button id="begin-game" class="menu-button" type="button">Begin your journey</button>
+  <button id="begin-game" class="menu-button" type="button"><img class="menu-icon" src="./images/ui/journey.svg" alt="" width="22" height="22" />Begin your journey</button>
   <p class="press-space">Or press Spacebar to begin</p>
 </section>
 
@@ -250,7 +250,7 @@
     </header>
     <nav id="character-sheet-tabs" class="sheet-tabs" role="tablist" aria-label="Character sheet sections"></nav>
     <div id="character-sheet-content" class="sheet-content"></div>
-    <footer><span class="keyboard-return-hint">C or Escape to return</span><button id="close-character-menu" class="menu-button" type="button">Return to world</button></footer>
+    <footer><span class="keyboard-return-hint">C or Escape to return</span><button id="close-character-menu" class="menu-button" type="button"><img class="menu-icon" src="./images/ui/return.svg" alt="" width="22" height="22" />Return to world</button></footer>
   </div>
 </section>
 
@@ -393,22 +393,22 @@
 
 <script src="./data/craftingData.js?v=2026-10-07"></script>
 <script src="./classes/CraftingSystem.js?v=2026-10-07"></script>
-<script src="./classes/CraftingUI.js?v=2026-10-07-world"></script>
+<script src="./classes/CraftingUI.js?v=2026-10-08-svg-ui"></script>
 <script src="./classes/CraftingCombat.js?v=2026-10-07"></script>
 <script src="./js/index.js?v=2026-10-08-touch"></script>
 <script src="./classes/WorldCrafting.js?v=2026-10-08-u-layout"></script>
 <script src="./js/eventListeners.js?v=2026-10-08-touch"></script>
 <nav id="touch-controls" aria-label="Map touch controls" hidden>
   <div class="touch-dpad" role="group" aria-label="Movement">
-    <button class="touch-direction touch-up" data-direction="w" type="button" aria-label="Move up">▲</button>
-    <button class="touch-direction touch-left" data-direction="a" type="button" aria-label="Move left">◀</button>
+    <button class="touch-direction touch-up" data-direction="w" type="button" aria-label="Move up"><img class="control-icon" src="./images/ui/move-up.svg" alt="" draggable="false" width="26" height="26" /></button>
+    <button class="touch-direction touch-left" data-direction="a" type="button" aria-label="Move left"><img class="control-icon" src="./images/ui/move-left.svg" alt="" draggable="false" width="26" height="26" /></button>
     <span class="touch-pad-center" aria-hidden="true"></span>
-    <button class="touch-direction touch-right" data-direction="d" type="button" aria-label="Move right">▶</button>
-    <button class="touch-direction touch-down" data-direction="s" type="button" aria-label="Move down">▼</button>
+    <button class="touch-direction touch-right" data-direction="d" type="button" aria-label="Move right"><img class="control-icon" src="./images/ui/move-right.svg" alt="" draggable="false" width="26" height="26" /></button>
+    <button class="touch-direction touch-down" data-direction="s" type="button" aria-label="Move down"><img class="control-icon" src="./images/ui/move-down.svg" alt="" draggable="false" width="26" height="26" /></button>
   </div>
   <div class="touch-actions">
-    <button id="touch-interact" type="button" aria-label="Interact with nearby object"><strong>E</strong><span>Interact</span></button>
-    <button id="touch-character" type="button" aria-label="Open character and crafting menu"><strong>C</strong><span>Character</span></button>
+    <button id="touch-interact" type="button" aria-label="Interact with nearby object"><img class="control-icon" src="./images/ui/interact.svg" alt="" draggable="false" width="26" height="26" /><strong>E</strong><span>Interact</span></button>
+    <button id="touch-character" type="button" aria-label="Open character and crafting menu"><img class="control-icon" src="./images/ui/character.svg" alt="" draggable="false" width="26" height="26" /><strong>C</strong><span>Character</span></button>
   </div>
 </nav>
 <script src="./js/touchControls.js?v=2026-10-08-touch"></script>
