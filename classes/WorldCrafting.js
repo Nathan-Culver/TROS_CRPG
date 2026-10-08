@@ -1,6 +1,7 @@
 /* Physical world objects, harvesting, construction and local workshop rentals. */
 class WorldCrafting {
   constructor() {
+    this.fireMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
     this.craftSprite=new Image();this.craftSprite.src='./images/crafting/crafting-props.png?v=2026-10-08';
     this.craftFrames=[[55, 36, 352, 381], [459, 75, 352, 348], [890, 127, 312, 290], [47, 432, 361, 404], [454, 511, 397, 337], [879, 548, 342, 303], [34, 844, 411, 376], [482, 892, 326, 307], [866, 916, 359, 280]];
     this.natureSprite=new Image();this.natureSprite.src='./images/tileset-forest-and-nature.png';
@@ -196,6 +197,29 @@ class WorldCrafting {
     const [sx,sy,sw,sh]=this.craftFrames[index],height=width*sh/sw;
     ctx.drawImage(this.craftSprite,sx,sy,sw,sh,x-width/2,ground-height,width,height);
   }
+  drawFirePit(ctx,time=performance.now()) {
+    const [sx,sy,sw,sh]=this.craftFrames[7],width=26,scale=width/sw,height=sh*scale,ground=4;
+    const frame=this.fireMotion.matches?0:Math.floor(time/100),phase=frame*.72;
+    ctx.save();
+    // A small stepped glow uses the same pixel grid as the world sprites.
+    ctx.fillStyle='#f89b35';ctx.globalAlpha*=this.fireMotion.matches ? 0.1 : 0.08+0.025*Math.sin(phase);
+    ctx.fillRect(-17,-5,34,10);ctx.fillRect(-13,-8,26,16);ctx.fillRect(-9,-10,18,18);
+    ctx.restore();
+    if(this.fireMotion.matches){this.drawCraftProp(ctx,7,0,ground,width);return;}
+    // Keep the stone ring and logs still; animate the supplied flame pixels.
+    const cut=Math.floor(sh*.45),baseY=ground-height+cut*scale,stretch=1+.09*Math.sin(phase*1.3),flameHeight=cut*scale*stretch;
+    ctx.drawImage(this.craftSprite,sx,sy+cut,sw,sh-cut,-width/2,baseY,width,(sh-cut)*scale);
+    for(let row=0;row<cut;row+=24) {
+      const band=Math.min(24,cut-row),sway=Math.round(Math.sin(phase+row*.04)*(1-row/cut));
+      const top=Math.round(baseY-flameHeight+row*scale*stretch),bottom=Math.round(baseY-flameHeight+(row+band)*scale*stretch);
+      ctx.drawImage(this.craftSprite,sx,sy+row,sw,band,-width/2+sway,top,width,Math.max(1,bottom-top));
+    }
+    // Four embers drift upward and fade, with no particle accumulation.
+    for(let n=0;n<4;n++) {
+      const life=(frame+n*5)%19/19,x=Math.round((n-1.5)*2+Math.sin(phase*.5+n)*2),y=Math.round(-12-life*12);
+      ctx.save();ctx.globalAlpha*=.7*(1-life);ctx.fillStyle=n%2?'#ffce67':'#ed7632';ctx.fillRect(x,y,1,1);ctx.restore();
+    }
+  }
   draw(ctx,foreground=false) {
     if(!gameUI.character)return;
     const near=this.nearby();
@@ -210,7 +234,7 @@ class WorldCrafting {
       if(o.existing){if(used){ctx.fillStyle='#8a8069';ctx.fillRect(-3,-2,6,2);}}
       else if(o.kind==='station'||o.kind==='fire') {
         if(this.craftSprite.complete&&this.craftSprite.naturalWidth) {
-          if(o.kind==='fire')this.drawCraftProp(ctx,7,0,4,26);
+          if(o.kind==='fire')this.drawFirePit(ctx);
           else if(o.station==='forge'){this.drawCraftProp(ctx,3,-5,1,28);this.drawCraftProp(ctx,5,9,6,18);}
           else this.drawCraftProp(ctx,{bloomery:0,cementation:1,crucible:2,welding:4,kit:6}[o.station],0,4,o.station==='kit'?32:30);
         }
