@@ -224,3 +224,13 @@ body.touch-save-screen [data-sheet-tab]:not([data-sheet-tab=browserSaves]):not([
  body.touch-overlay .touch-actions {bottom:max(8px,env(safe-area-inset-bottom));}
  body.touch-overlay .touch-actions #touch-character {width:44px;height:44px;justify-self:center;}
 }
+.mobile-craft-sidebar {display:contents;}
+@media (orientation:landscape) and (max-height:450px) {
+ .character-menu .crafting-section {display:grid;grid-template-columns:minmax(150px,23%) minmax(0,1fr);gap:10px;align-items:start;}
+ .mobile-craft-sidebar {display:block;grid-column:1;grid-row:1;min-width:0;}
+ .mobile-craft-body {grid-column:2;grid-row:1;min-width:0;}
+ .mobile-craft-sidebar .mobile-craft-navigation {grid-template-columns:minmax(0,1fr);}
+ .crafting-section>.inventory-notice {grid-column:1/-1;grid-row:2;}
+ .character-menu .mobile-smith-layout {margin:0;}
+ .mobile-craft-body .craft-history {margin-top:4px;}
+}

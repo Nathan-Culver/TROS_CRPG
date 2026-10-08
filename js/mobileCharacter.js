@@ -39,6 +39,10 @@
       const recipes=[...refine.querySelectorAll('.recipe-row')],updateRecipe=id=>{gameUI.mobileMetalRecipe=id;recipes.forEach((row,index)=>row.hidden=String(index)!==id);};
       choice(refine,'Metal recipe',recipes.map((row,index)=>[String(index),row.querySelector('strong').textContent]),gameUI.mobileMetalRecipe||'0',updateRecipe);updateRecipe(gameUI.mobileMetalRecipe||'0');
     }
+    const body=nav.nextElementSibling,sidebar=document.createElement('div');sidebar.className='mobile-craft-sidebar';
+    sidebar.append(navigation,instructions);const skill=section.querySelector('.mobile-craft-skill');if(skill)sidebar.append(skill);
+    if(page==='alchemy'){const recipes=section.querySelector('.craft-history');if(recipes)sidebar.append(recipes);}
+    body.classList.add('mobile-craft-body');section.prepend(sidebar);
   };
   const sync=()=>{
     const saves=['browserSaves','exportSaves'].includes(gameUI.activeSheetTab);
