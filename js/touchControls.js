@@ -3,6 +3,11 @@
   const controls = document.querySelector('#touch-controls')
   const pointers = new Map()
   const directions = [...controls.querySelectorAll('[data-direction]')]
+  const selectButton=document.getElementById('touch-select')
+  const startButton=document.getElementById('touch-start')
+  const interactButton=document.getElementById('touch-interact')
+  const backButton=document.getElementById('touch-character')
+  const stopMovement=()=>{release();Object.values(keys).forEach(key=>key.pressed=false);player.velocity.x=0;player.velocity.y=0;}
   const fullscreenButton = document.getElementById('mobile-fullscreen')
   const fullscreenStatus = document.getElementById('fullscreen-status')
   const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true
@@ -33,8 +38,20 @@
     fullscreenButton.setAttribute('aria-label', isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen')
     fullscreenButton.title = isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'
     fullscreenButton.setAttribute('aria-pressed', String(isFullscreen()))
-    controls.hidden = !touchViewport.matches || !gameUI.isMapActive() || battleSystem.isActive
-    if (controls.hidden) release()
+    const playing=!!gameUI.character&&!['start','builder'].includes(gameUI.mode)
+    const onMap=playing&&gameUI.isMapActive()&&!battleSystem.isActive
+    const battleInventory=battleSystem.isActive&&!battleSystem.inventoryPopup.hidden
+    controls.hidden=!touchViewport.matches||!playing||battleSystem.isActive&&!battleInventory
+    controls.querySelector('.touch-dpad').hidden=!onMap
+    controls.querySelector('.touch-system').hidden=battleSystem.isActive
+    interactButton.hidden=!onMap
+    backButton.disabled=onMap
+    document.body.classList.toggle('touch-playing',touchViewport.matches&&playing&&!battleSystem.isActive)
+    const saves=gameUI.mode==='menu'&&['browserSaves','exportSaves'].includes(gameUI.activeSheetTab)
+    document.body.classList.toggle('touch-save-screen',touchViewport.matches&&saves)
+    selectButton.setAttribute('aria-pressed',String(gameUI.mode==='menu'&&!saves))
+    startButton.setAttribute('aria-pressed',String(saves))
+    if (!onMap) release()
     document.querySelector('.map-hint').hidden = touchViewport.matches || !gameUI.isMapActive() || battleSystem.isActive
   }
   directions.forEach(button => {
@@ -96,17 +113,33 @@
     sync()
   })
   bindAction('touch-character', () => {
-    release()
-    if (gameUI.isMapActive() && !battleSystem.isActive) gameUI.openCharacterMenu()
+    stopMovement()
+    if(battleSystem.isActive&&!battleSystem.inventoryPopup.hidden)battleSystem.closeBattleInventory()
+    else if(gameUI.mode==='world')worldCrafting.closeDialog()
+    else if(gameUI.mode==='menu')gameUI.closeCharacterMenu()
     sync()
   })
+  const openPausedScreen=(tab)=>{
+    if(!gameUI.character||battleSystem.isActive||['start','builder'].includes(gameUI.mode))return
+    stopMovement()
+    if(gameUI.mode==='menu'&&(tab==='character'?!['browserSaves','exportSaves'].includes(gameUI.activeSheetTab):['browserSaves','exportSaves'].includes(gameUI.activeSheetTab)))gameUI.closeCharacterMenu()
+    else {
+      if(gameUI.mode==='world')worldCrafting.closeDialog()
+      gameUI.activeSheetTab=tab
+      gameUI.openCharacterMenu()
+    }
+    sync()
+  }
+  bindAction('touch-select',()=>openPausedScreen('character'))
+  bindAction('touch-start',()=>openPausedScreen('browserSaves'))
   window.addEventListener('blur', release)
   window.addEventListener('resize', release)
   document.addEventListener('visibilitychange', () => { if (document.hidden) release() })
   touchViewport.addEventListener('change', sync)
   for (const event of ['fullscreenchange','webkitfullscreenchange']) document.addEventListener(event, () => { release(); resizeMapViewport(); sync() })
   const observer = new MutationObserver(sync)
-  for (const id of ['start-screen','character-builder','character-menu','battle-screen']) observer.observe(document.getElementById(id), {attributes:true,attributeFilter:['hidden','aria-hidden']})
+  for (const id of ['start-screen','character-builder','character-menu','battle-screen','battle-inventory-popup']) observer.observe(document.getElementById(id), {attributes:true,attributeFilter:['hidden','aria-hidden']})
   observer.observe(document.body, {childList:true})
+  observer.observe(gameUI.sheetTabs,{subtree:true,childList:true,attributes:true,attributeFilter:['aria-selected']})
   sync()
 })()

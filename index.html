@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="./css/battle.css?v=visible-battle-actions-v4-2026-08-09" />
 <link rel="stylesheet" href="./css/crafting.css?v=2026-10-07" />
 <link rel="stylesheet" href="./css/world-crafting.css?v=2026-10-07-world" />
-<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-fullscreen" />
+<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-controller" />
 <style>
   * {
     box-sizing: border-box;
@@ -403,7 +403,11 @@
 <script src="./js/index.js?v=2026-10-08-solid-props"></script>
 <script src="./classes/WorldCrafting.js?v=2026-10-08-solid-props"></script>
 <script src="./js/eventListeners.js?v=2026-10-08-touch"></script>
-<nav id="touch-controls" aria-label="Map touch controls" hidden>
+<nav id="touch-controls" aria-label="Game touch controls" hidden>
+  <div class="touch-system">
+    <button id="touch-select" type="button" aria-label="L: Select, character screen and pause"><strong>L</strong><span>Select</span></button>
+    <button id="touch-start" type="button" aria-label="R: Start, save and load screen and pause"><strong>R</strong><span>Start</span></button>
+  </div>
   <div class="touch-dpad" role="group" aria-label="Movement">
     <button class="touch-direction touch-up" data-direction="w" type="button" aria-label="Move up"><img class="control-icon" src="./images/ui/move-up.svg" alt="" draggable="false" width="26" height="26" /></button>
     <button class="touch-direction touch-left" data-direction="a" type="button" aria-label="Move left"><img class="control-icon" src="./images/ui/move-left.svg" alt="" draggable="false" width="26" height="26" /></button>
@@ -412,11 +416,12 @@
     <button class="touch-direction touch-down" data-direction="s" type="button" aria-label="Move down"><img class="control-icon" src="./images/ui/move-down.svg" alt="" draggable="false" width="26" height="26" /></button>
   </div>
   <div class="touch-actions">
-    <button id="touch-interact" type="button" aria-label="Interact with nearby object"><img class="control-icon" src="./images/ui/interact.svg" alt="" draggable="false" width="26" height="26" /><strong>E</strong><span>Interact</span></button>
-    <button id="touch-character" type="button" aria-label="Open character and crafting menu"><img class="control-icon" src="./images/ui/character.svg" alt="" draggable="false" width="26" height="26" /><strong>C</strong><span>Character</span></button>
+    <button id="touch-interact" type="button" aria-label="A: Interact"><strong>A</strong></button>
+    <button id="touch-character" type="button" aria-label="B: Close interaction window"><strong>B</strong></button>
   </div>
 </nav>
 <button id="mobile-fullscreen" type="button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden><img src="./images/ui/fullscreen.svg" alt="" width="24" height="24" /></button>
 <p id="fullscreen-status" role="status" hidden></p>
 <script src="./js/mobileBattle.js?v=2026-10-08-tabs"></script>
-<script src="./js/touchControls.js?v=2026-10-08-fullscreen"></script>
+<script src="./js/mobileCharacter.js?v=2026-10-08-controller"></script>
+<script src="./js/touchControls.js?v=2026-10-08-controller"></script>

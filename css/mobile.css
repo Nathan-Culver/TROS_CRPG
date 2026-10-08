@@ -123,3 +123,104 @@ body.touch-device .press-space,body.touch-device .keyboard-return-hint {display:
  .compact-battle .mobile-battle-tabs {padding-right:60px;}
  .compact-battle .mobile-battle-summary {padding-right:60px;}
 }
+
+/* Handheld A/B and Select/Start. Menus share the same pause state as desktop. */
+#touch-controls {z-index:65;}
+#touch-controls .touch-dpad[hidden],#touch-controls .touch-system[hidden],#touch-controls button[hidden] {display:none;}
+.touch-actions {display:grid;grid-template-columns:62px 62px;}
+.touch-actions #touch-character {grid-column:1;grid-row:1;}
+.touch-actions #touch-interact {grid-column:2;grid-row:1;}
+.touch-actions strong {position:static;font-size:26px;line-height:1;}
+#touch-controls button:disabled {opacity:.45;cursor:default;}
+.touch-system {position:absolute;inset:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) auto max(12px,env(safe-area-inset-left));display:flex;justify-content:space-between;pointer-events:none;}
+.touch-system button {width:72px;min-height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.touch-system strong {font-size:20px;}.touch-system span {font-size:10px;}
+#touch-controls .touch-system button[aria-pressed=true] {background:rgba(201,167,92,.55);border-color:#ffe5a1;}
+body.touch-playing #mobile-fullscreen {right:max(94px,calc(env(safe-area-inset-right) + 94px));}
+body.touch-playing .world-route-hint {top:max(60px,calc(env(safe-area-inset-top) + 60px));}
+body.touch-playing .world-craft-toast {top:max(92px,calc(env(safe-area-inset-top) + 92px));}
+body.touch-playing .character-menu,body.touch-playing .world-workshop-dialog {padding-top:max(60px,calc(env(safe-area-inset-top) + 60px));}
+body.touch-playing .world-workshop-dialog {padding-bottom:max(128px,calc(env(safe-area-inset-bottom) + 128px));}
+body.touch-playing .character-sheet-card>footer {padding-right:158px;min-height:60px;}
+body.touch-playing .sheet-content {padding-bottom:130px;}
+body.touch-save-screen [data-sheet-tab]:not([data-sheet-tab=browserSaves]):not([data-sheet-tab=exportSaves]) {display:none;}
+@media (orientation:landscape) and (max-height:450px) {
+ body.touch-playing .world-workshop-dialog {padding-bottom:8px;padding-right:158px;}
+ body.touch-playing .character-sheet-card>footer {padding-right:158px;}
+}
+
+.mobile-sheet-navigation {display:none;}
+@media (max-width:760px), (any-pointer:coarse), (max-height:560px) {
+ .character-menu .sheet-tabs {display:none;}
+ .mobile-sheet-navigation {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;flex:none;padding:4px 8px;color:#ead9af;font:13px Georgia,serif;}
+ .mobile-sheet-navigation select {min-width:0;width:100%;height:44px;padding:6px 10px;border:1px solid #796647;border-radius:5px;background:#152443;color:#f5ecd2;font:16px Georgia,serif;}
+ body.touch-playing .character-menu {padding-top:8px;}
+ body.touch-playing .character-sheet-card>header {padding:8px 146px 8px 84px;min-height:48px;}
+ .character-sheet-card .sheet-profile-heading {min-width:0;gap:8px;width:100%;}
+ .character-sheet-card .barbarian-profile-art,.character-sheet-card:has([data-sheet-tab=crafting].active) .barbarian-profile-art {width:28px;min-width:28px;height:28px;flex:0 0 28px;}
+ .character-sheet-card h1 {min-width:0;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+ body.touch-playing .character-sheet-card>footer {min-height:86px;padding:8px 160px 8px 8px;}
+ body.touch-playing .sheet-content {padding:8px;}
+ body.touch-overlay .touch-actions #touch-character {margin-bottom:0;}
+ body.touch-overlay .world-workshop-dialog {padding-bottom:100px;}
+ .character-menu .sheet-section:not(.inventory-section):not(.crafting-section):not(.save-slots-section) {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-content:start;}
+ .character-menu .sheet-section[hidden] {display:none!important;}
+ .character-menu .sheet-section>h2,.character-menu .sheet-subheading,.character-menu .condition-actions {grid-column:1/-1;}
+ .character-menu .sheet-row {display:flex;flex-direction:column;justify-content:flex-start;gap:3px;margin:0;padding:6px;background:rgba(23,35,58,.6);font-size:12px;overflow-wrap:anywhere;}
+ .character-menu .sheet-row strong {text-align:left;font-size:13px;}
+ .character-menu .inventory-action-row {grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:6px;}
+ .character-menu .inventory-actions {display:grid;grid-template-columns:repeat(3,44px);gap:3px;}
+ .character-menu .inventory-actions button {min-width:44px;padding:4px;font-size:10px;}
+ .character-menu .craft-subtabs {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin:6px 0;}
+ .character-menu .craft-subtabs button {min-width:0;margin:0;padding:6px 3px;font-size:11px;}
+ .character-menu .craft-subtabs .menu-icon {display:none;}
+ .character-menu .save-slot-actions {flex-wrap:wrap;}
+ .character-menu .save-slot-row {padding:6px;}
+}
+@media (min-width:560px) and (any-pointer:coarse), (min-width:560px) and (max-height:560px) {
+ .character-menu .sheet-section:not(.inventory-section):not(.crafting-section):not(.save-slots-section) {grid-template-columns:repeat(3,minmax(0,1fr));}
+ .character-menu .brew-layout,.character-menu .smith-layout {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .character-menu .brew-preview,.character-menu .craft-card {padding:8px;}
+ .character-menu .ingredient-shelf {max-height:250px;}
+ .character-menu .inventory-section {grid-template-columns:repeat(2,minmax(0,1fr));}
+ .character-menu .inventory-section>h2,.character-menu .inventory-wealth,.character-menu .inventory-notice {grid-column:1/-1;}
+ .character-menu .inventory-action-row {grid-template-columns:minmax(0,1fr);}
+ .character-menu .inventory-actions {grid-template-columns:repeat(3,minmax(44px,1fr));}
+ .character-menu .save-slots-section {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .character-menu .save-slots-section>h2,.character-menu .save-slots-help {grid-column:1/-1;}
+}
+
+@media (max-width:760px), (any-pointer:coarse), (max-height:560px) {
+ .crafting-section .mobile-craft-choice {padding:4px 0;}
+ .crafting-section .mobile-craft-choice select {font-size:16px;}
+ .crafting-section .mobile-craft-instructions {margin:4px 0 8px;color:#b7b5ac;font-size:12px;}
+ .crafting-section summary {min-height:36px;padding:8px 0;cursor:pointer;}
+ .crafting-section .craft-subtabs[hidden],.crafting-section [hidden] {display:none!important;}
+ .character-menu .mobile-brew-layout,.character-menu .mobile-smith-layout {grid-template-columns:minmax(0,1fr);gap:8px;}
+ .mobile-brew-layout>.mobile-craft-choice,.mobile-smith-layout>.mobile-craft-choice {grid-column:1/-1;}
+ .mobile-brew-next {grid-column:1/-1;}
+ .character-menu .ingredient-shelf {max-height:none;}
+ .crafting-section .ingredient-card small {display:none;}
+ .crafting-section .ingredient-card.selected small {display:block;}
+ .crafting-section .ingredient-card {min-height:64px;}
+ .crafting-section .craft-toolbar {margin:6px 0;font-size:12px;}
+ .crafting-section .craft-toolbar .craft-help {margin:0;font-size:11px;}
+ .crafting-section .craft-card+.craft-card {margin-top:0;}
+ .mobile-forge-form {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+ .mobile-forge-form>h3,.mobile-forge-form>p,.mobile-forge-form>button {grid-column:1/-1;}
+ .mobile-forge-form label {min-width:0;margin:0;font-size:12px;}
+}
+@media (max-width:760px), (any-pointer:coarse), (max-height:560px) {
+ .mobile-craft-navigation {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .mobile-craft-navigation .mobile-craft-choice {grid-template-columns:minmax(0,1fr);gap:2px;font-size:11px;}
+ .mobile-craft-navigation select {max-width:100%;}
+ .mobile-craft-skill {font-size:12px;color:#e9d8aa;margin:4px 0;}
+ .crafting-section .mobile-craft-instructions {margin:0;font-size:11px;}
+ .crafting-section .mobile-craft-instructions summary {min-height:28px;padding:4px 0;}
+ .crafting-section .craft-card h3 {margin:4px 0;}
+}
+@media (orientation:landscape) and (max-height:450px) {
+ body.touch-playing .character-sheet-card>footer {min-height:54px;}
+ body.touch-overlay .touch-actions {bottom:max(8px,env(safe-area-inset-bottom));}
+ body.touch-overlay .touch-actions #touch-character {width:44px;height:44px;justify-self:center;}
+}
