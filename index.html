@@ -1,11 +1,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>The Riddle of Steel</title>
+<meta name="theme-color" content="#090e0c" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./images/character-sprites/portraits/barbarian-male.png" />
 <link rel="stylesheet" href="./css/menu.css?v=pencil-armor-map-2026-08-09" />
 <link rel="stylesheet" href="./css/battle.css?v=visible-battle-actions-v4-2026-08-09" />
 <link rel="stylesheet" href="./css/crafting.css?v=2026-10-07" />
 <link rel="stylesheet" href="./css/world-crafting.css?v=2026-10-07-world" />
-<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-solid-props" />
+<link rel="stylesheet" href="./css/mobile.css?v=2026-10-08-fullscreen" />
 <style>
   * {
     box-sizing: border-box;
@@ -389,12 +394,12 @@
 <script src="./classes/Player.js?v=2026-10-08-touch"></script>
 <script src="./classes/Sprite.js?v=tree-leaves-2026-08-05"></script>
 <script src="./classes/GameUI.js?v=2026-10-08-touch"></script>
-<script src="./classes/BattleSystem.js?v=crafting-2026-10-07"></script>
+<script src="./classes/BattleSystem.js?v=2026-10-08-examples"></script>
 
-<script src="./data/craftingData.js?v=2026-10-07"></script>
-<script src="./classes/CraftingSystem.js?v=2026-10-07"></script>
-<script src="./classes/CraftingUI.js?v=2026-10-08-svg-ui"></script>
-<script src="./classes/CraftingCombat.js?v=2026-10-07"></script>
+<script src="./data/craftingData.js?v=2026-10-08-examples"></script>
+<script src="./classes/CraftingSystem.js?v=2026-10-08-examples"></script>
+<script src="./classes/CraftingUI.js?v=2026-10-08-examples"></script>
+<script src="./classes/CraftingCombat.js?v=2026-10-08-examples"></script>
 <script src="./js/index.js?v=2026-10-08-solid-props"></script>
 <script src="./classes/WorldCrafting.js?v=2026-10-08-solid-props"></script>
 <script src="./js/eventListeners.js?v=2026-10-08-touch"></script>
@@ -411,4 +416,7 @@
     <button id="touch-character" type="button" aria-label="Open character and crafting menu"><img class="control-icon" src="./images/ui/character.svg" alt="" draggable="false" width="26" height="26" /><strong>C</strong><span>Character</span></button>
   </div>
 </nav>
-<script src="./js/touchControls.js?v=2026-10-08-touch"></script>
+<button id="mobile-fullscreen" type="button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden><img src="./images/ui/fullscreen.svg" alt="" width="24" height="24" /></button>
+<p id="fullscreen-status" role="status" hidden></p>
+<script src="./js/mobileBattle.js?v=2026-10-08-tabs"></script>
+<script src="./js/touchControls.js?v=2026-10-08-fullscreen"></script>

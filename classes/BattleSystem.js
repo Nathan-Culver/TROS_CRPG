@@ -2202,7 +2202,7 @@ class BattleSystem {
     const weapon = MELEE_WEAPONS[attacker.weapon]
     const damageType = maneuver.thrust ? 'puncturing' : maneuver.bash || maneuver.murderStroke ? 'bludgeoning' : 'cutting'
     const effectiveArmor = this.getEffectiveArmor(defender, damageType, hitLocation)
-    const potionDamage = attacker === this.player && Crafting.effects(this.character).some(e => e.text.startsWith(`increase ${damageType === 'puncturing' ? 'thrust' : damageType === 'bludgeoning' ? 'blunt' : 'cutting'} damage`)) ? 1 : 0
+    const potionDamage = attacker === this.player ? Crafting.amount(this.character,`increase ${damageType === 'puncturing' ? 'thrust' : damageType === 'bludgeoning' ? 'blunt' : 'cutting'} damage`) : 0
     const strengthToughnessModifier = getStrengthToughnessDamageModifier(
       this.getConditionTrait(attacker, 'strength'),
       this.getConditionTrait(defender, 'toughness')

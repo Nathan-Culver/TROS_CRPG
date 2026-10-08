@@ -1,5 +1,7 @@
 # Smithing and alchemy update
 
+**Latest update:** [MOBILE_COMBAT_AND_ALCHEMY.md](MOBILE_COMBAT_AND_ALCHEMY.md) describes current pair/triplet brewing rules from the latest `alchemy examples.pdf`, mobile fullscreen and compact combat. The historical matching rules below have been superseded.
+
 **World interaction follow-up:** gathering and station access described below have been replaced by physical resource interactions, buildable stations, and NPC rentals. See [WORLD_CRAFTING_UPDATE.md](WORLD_CRAFTING_UPDATE.md) for the current controls and gathering chances. The original crafting rules and combat integration described here still apply.
 
 Updated project: `C:\Users\s6ncu\OneDrive\Desktop\TROS_CRPG\index.html`
@@ -28,7 +30,7 @@ Open the game, create or load a character, press **C**, and choose **Crafting**.
 - Crafted weapon statistics and all crafting inventory, stations, skill ranks, active effects, and logs persist through the existing save/export/import systems.
 - Ingredient and material icons use the supplied sheets through CSS crops. Colors and controls follow the existing dark parchment/gold style. Smaller screens have a working scrolling character sheet.
 
-## Rule precedence
+## Original rule precedence (superseded for alchemy matching)
 
 The Updated Rules PDF governs ingredient data, the brewing pool, rarity matching, and formula skill requirements. The older quick reference and the new visual-aids PDF describe an older pair/triplet system; those conflicts were intentionally resolved in favor of Updated Rules. Consequently a Rare pair is invalid, Common effects do not require a pair, and a Rare triplet produces the listed two-round effect without an extra duration/potency bonus. Some older example ingredient matches also differ from the updated table.
 

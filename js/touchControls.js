@@ -3,6 +3,24 @@
   const controls = document.querySelector('#touch-controls')
   const pointers = new Map()
   const directions = [...controls.querySelectorAll('[data-direction]')]
+  const fullscreenButton = document.getElementById('mobile-fullscreen')
+  const fullscreenStatus = document.getElementById('fullscreen-status')
+  const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true
+  const isFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement)
+  let fullscreenMessageTimer
+  const fullscreenHint = () => {
+    fullscreenStatus.textContent = 'For a full-screen app in this browser, choose Share or the browser menu → Add to Home Screen, then open the game from its icon.'
+    fullscreenStatus.hidden = false
+    clearTimeout(fullscreenMessageTimer)
+    fullscreenMessageTimer = setTimeout(() => { fullscreenStatus.hidden = true }, 8000)
+  }
+  const enterFullscreen = async () => {
+    if (!touchViewport.matches || isFullscreen() || standalone()) return
+    const request = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen
+    if (!request) { fullscreenHint(); return }
+    try { await request.call(document.documentElement,{navigationUI:'hide'}); fullscreenStatus.hidden = true }
+    catch { fullscreenHint() }
+  }
   const syncDirections = () => {
     for (const [key, state] of Object.entries(keys)) {
       state.touchPressed = [...pointers.values()].includes(key)
@@ -11,6 +29,10 @@
   }
   const release = () => { pointers.clear(); syncDirections() }
   const sync = () => {
+    fullscreenButton.hidden = !touchViewport.matches || standalone() && !isFullscreen()
+    fullscreenButton.setAttribute('aria-label', isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen')
+    fullscreenButton.title = isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'
+    fullscreenButton.setAttribute('aria-pressed', String(isFullscreen()))
     controls.hidden = !touchViewport.matches || !gameUI.isMapActive() || battleSystem.isActive
     if (controls.hidden) release()
     document.querySelector('.map-hint').hidden = touchViewport.matches || !gameUI.isMapActive() || battleSystem.isActive
@@ -58,7 +80,15 @@
     // Keyboard and assistive activation still use the native click path.
     button.addEventListener('click', event => { if (event.detail === 0) action() })
   }
-  bindAction('begin-game', () => { if (gameUI.mode === 'start') gameUI.showBuilder(!touchViewport.matches); sync() })
+  bindAction('begin-game', () => { if (gameUI.mode === 'start') { enterFullscreen(); gameUI.showBuilder(!touchViewport.matches) } sync() })
+  bindAction('mobile-fullscreen', async () => {
+    release()
+    if (isFullscreen()) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen
+      try { await exit?.call(document) } catch { /* Browser retains its exit gesture. */ }
+    } else await enterFullscreen()
+    sync()
+  })
   bindAction('close-character-menu', () => { if (gameUI.mode === 'menu') gameUI.closeCharacterMenu(); sync() })
   bindAction('touch-interact', () => {
     release()
@@ -74,6 +104,7 @@
   window.addEventListener('resize', release)
   document.addEventListener('visibilitychange', () => { if (document.hidden) release() })
   touchViewport.addEventListener('change', sync)
+  for (const event of ['fullscreenchange','webkitfullscreenchange']) document.addEventListener(event, () => { release(); resizeMapViewport(); sync() })
   const observer = new MutationObserver(sync)
   for (const id of ['start-screen','character-builder','character-menu','battle-screen']) observer.observe(document.getElementById(id), {attributes:true,attributeFilter:['hidden','aria-hidden']})
   observer.observe(document.body, {childList:true})

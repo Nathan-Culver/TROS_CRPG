@@ -175,11 +175,20 @@ const Crafting = {
     for (const [rarity,slots] of [['common',1],['uncommon',2],['rare',3]]) {
       const groups = new Map();
       ingredients.forEach(i => { const text=i[rarity]; if(!groups.has(text)) groups.set(text,[]); groups.get(text).push(i.name); });
-      groups.forEach((sources,text) => { if(sources.length>=slots) result.push({key:`${rarity}:${text}`,rarity,slots,text,sources}); });
+      groups.forEach((sources,text) => { if(sources.length>=2) result.push({triplet:sources.length>=3,key:`${rarity}:${text}`,rarity,slots,text,sources}); });
     }
     return result;
   },
-  formula(ids, keys, skill) {
+  enhance(effect, choice = "duration") {
+    const enhanced={...effect, baseText:effect.text, duration:2, potency:0};
+    if(effect.triplet && choice==="duration" && /for \d+ rounds/.test(effect.text)) {enhanced.duration=4;enhanced.text=effect.text.replace(/for \d+ rounds/,"for 4 rounds");}
+    else if(effect.triplet && choice==="potency" && this.canEnhancePotency(effect)) {enhanced.potency=1;enhanced.text=effect.text.replace(/\d+/,n=>String(Number(n)+1));}
+    return enhanced;
+  },
+  canEnhancePotency(effect) {return /\d+/.test(effect.text.split("for ")[0]);},
+  amount(c,prefix) {return Math.max(0,...this.effects(c).filter(e=>e.text.startsWith(prefix)).map(e=>Number(e.text.match(/\d+/)?.[0]||0)));},
+  delayAmount(c,type) {return Math.max(0,...this.effects(c).filter(e=>e.text.startsWith('delay')&&e.text.includes(type)).map(e=>Number(e.text.match(/\d+/)[0])));},
+  formula(ids, keys, skill, enhancements = {}) {
     if (!ids.length || ids.length>5 || new Set(ids).size!==ids.length) return {error:'Choose 1–5 different ingredients.'};
     const candidates=this.candidates(ids), effects=keys.map(k=>candidates.find(e=>e.key===k));
     if (!effects.length || effects.some(e=>!e) || new Set(keys).size!==keys.length) return {error:'Choose available effects.'};
@@ -187,11 +196,11 @@ const Crafting = {
     const required=rare ? (uncommon?5:4) : uncommon>1?3:uncommon?2:1;
     if(slots>5) return {error:'Formula exceeds five effect slots.',slots};
     if(skill<required) return {error:`Requires Alchemy ${required}.`,slots};
-    return {effects,slots,required};
+    return {effects:effects.map(e=>this.enhance(e,enhancements[e.key] || (this.canEnhancePotency(e)&&!e.text.includes("rounds")?"potency":"duration"))),slots,required};
   },
-  brew(c,ids,keys,random=Math.random) {
+  brew(c,ids,keys,random=Math.random,enhancements={}) {
     this.ready(c,['kit'],true);
-    const f=this.formula(ids,keys,c.crafting.alchemy);
+    const f=this.formula(ids,keys,c.crafting.alchemy,enhancements);
     if(f.error) throw new Error(f.error);
     this.consume(c,Object.fromEntries(ids.map(id=>[id,1]))); c.conditions.fatigue++;
     const roll=this.roll(c,true,random);
@@ -216,18 +225,18 @@ const Crafting = {
           else { let left=n; for(const w of [...target.wounds].sort((a,b)=>(b[key]||0)-(a[key]||0))) {const used=Math.min(left,w[key]||0);w[key]-=used;left-=used;} }
         }
       } else {
-        const previous=c.crafting.activeEffects.find(e=>e.text===text);
-        if(previous) previous.remaining=2;
-        else {
-          c.crafting.activeEffects.push({text,remaining:2});
-          if(text.startsWith('increase health by')) {target.conditions.currentHealth++;target.conditions.maxHealth++;}
-        }
+        const baseText=effect.baseText||text, duration=effect.duration||Number(text.match(/for (\d+) rounds/)?.[1])||2;
+        const previous=c.crafting.activeEffects.find(e=>(e.baseText||e.text)===baseText);
+        const oldHealth=previous&&text.startsWith('increase health by')?Number(previous.text.match(/\d+/)[0]):0;
+        if(previous) {previous.remaining=Math.max(previous.remaining,duration);if((effect.potency||0)>=(previous.potency||0))Object.assign(previous,{text,baseText,potency:effect.potency||0});}
+        else c.crafting.activeEffects.push({text,baseText,remaining:duration,potency:effect.potency||0});
+        if(text.startsWith('increase health by')) {const nextHealth=Number((previous?.text||text).match(/\d+/)[0]);target.conditions.currentHealth+=nextHealth-oldHealth;target.conditions.maxHealth+=nextHealth-oldHealth;}
       }
     }
     r.quantity--; c.inventoryItems=c.inventoryItems.filter(i=>i.quantity>0);
-    return `${r.name} consumed. Temporary effects last two combat rounds.`;
+    return `${r.name} consumed. Temporary effects last their listed combat rounds.`;
   },
-  tick(c,target=c) { const s=c.crafting; if(!s)return; s.activeEffects.forEach(e=>{e.remaining--;if(e.remaining<=0&&e.text.startsWith('increase health by')){target.conditions.currentHealth=Math.max(0,target.conditions.currentHealth-1);target.conditions.maxHealth=Math.max(1,target.conditions.maxHealth-1);}}); s.activeEffects=s.activeEffects.filter(e=>e.remaining>0); },
+  tick(c,target=c) { const s=c.crafting; if(!s)return; s.activeEffects.forEach(e=>{e.remaining--;if(e.remaining<=0&&e.text.startsWith('increase health by')){target.conditions.currentHealth=Math.max(0,target.conditions.currentHealth-Number(e.text.match(/\d+/)[0]));target.conditions.maxHealth=Math.max(1,target.conditions.maxHealth-Number(e.text.match(/\d+/)[0]));}}); s.activeEffects=s.activeEffects.filter(e=>e.remaining>0); },
   recordFor(c,weaponId) { return c?.inventoryItems?.find(r=>(r.weaponId || EQUIPMENT_BY_ID[r.id]?.weaponId)===weaponId && r.quantity>0); },
   wear(b,actor,weaponId,random=Math.random) {
     if(actor!==b.player)return;

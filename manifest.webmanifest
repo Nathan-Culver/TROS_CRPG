@@ -1,0 +1,12 @@
+{
+  "id": "./",
+  "name": "The Riddle of Steel",
+  "short_name": "TROS",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#090e0c",
+  "theme_color": "#090e0c",
+  "icons": [{"src":"./images/character-sprites/portraits/barbarian-male.png","sizes":"192x192","type":"image/png","purpose":"any"}]
+}

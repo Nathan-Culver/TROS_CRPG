@@ -17,8 +17,16 @@ GameUI.prototype.createCraftingSection = function(c) {
     skill.append(craftNode('span',`${c.spiritualAttributes.reduce((n,a)=>n+a.value,0)} SA available · largest balances spent first`,'craft-help'));
   }
   if((this.craftPage||'alchemy')==='alchemy') {
-    body.append(craftNode('p','Select up to five different ingredients. Choose effects below: Common 1 slot/source, Uncommon 2 slots/distinct sources, Rare 3. Effects share a five-slot budget.','craft-help'));
-    this.brewIngredients=(this.brewIngredients||[]).filter(id=>Crafting.count(c,id)>0);this.brewEffects||=[];
+    body.append(craftNode('p','Select up to five different ingredients. Choose effects below: Matching pairs create effects: Common 1 slot, Uncommon 2, Rare 3. Triplets add two rounds or one potency. Effects share a five-slot budget.','craft-help'));
+    this.brewIngredients=(this.brewIngredients||[]).filter(id=>Crafting.count(c,id)>0);this.brewEffects||=[];this.brewEnhancements||={};
+    const recipes=craftNode('details',null,'craft-history');recipes.append(craftNode('summary','Recipes from your alchemy examples'));body.append(recipes);
+    const examples=[
+      ['Rare + Uncommon',['Aconite','Bloodmoss','Allspice Root','Bryonia'],['rare:lower attacks by 1 tn for 2 rounds against wounded enemies','uncommon:add 2 cp for 2 rounds while attacking']],
+      ['Two Uncommon',['Aconite','Arenaria','Allspice Root','Bryonia'],['uncommon:add 2 cp for 2 rounds while enemy is wounded','uncommon:add 2 cp for 2 rounds while attacking']],
+      ['Uncommon + Two Common',['Balisse Fruit','Longrube',"Idunn’s Apples",'Allspice Root'],['uncommon:add 2 cp for 2 rounds while unwounded','common:remove 3 fatigue','common:increase health by 1 for 2 rounds']],
+      ['Rare Triplet',['Arenaria','Bryonia','Honeysuckle'],['rare:ignore knockout for 2 rounds']]
+    ];
+    examples.forEach(([name,names,keys])=>{const ids=names.map(name=>ALCHEMY_INGREDIENTS.find(i=>i.name.replace(/[’']/g,'')===name.replace(/[’']/g,''))?.id);const row=craftNode('div',null,'recipe-row');row.append(craftNode('strong',name),craftNode('small',names.join(' + ')));button(row,'Load recipe',()=>{this.brewIngredients=ids;this.brewEffects=keys;this.brewEnhancements={};return `${name} loaded. Choose Brew at a nearby alchemy bench.`;},ids.some(id=>!id||!Crafting.count(c,id)));recipes.append(row);});
     const layout=craftNode('div',null,'brew-layout'), shelf=craftNode('div',null,'ingredient-shelf'), preview=craftNode('div',null,'brew-preview'); layout.append(shelf,preview);body.append(layout);
     const search=craftNode('input');search.type='search';search.placeholder='Find a carried ingredient';search.setAttribute('aria-label','Find ingredient');search.value=this.ingredientSearch||'';shelf.append(search);
     search.addEventListener('input',()=>{this.ingredientSearch=search.value; for(const card of shelf.querySelectorAll('[data-ingredient-name]'))card.hidden=!card.dataset.ingredientName.includes(search.value.toLowerCase());});
@@ -36,13 +44,19 @@ GameUI.prototype.createCraftingSection = function(c) {
     const candidates=Crafting.candidates(this.brewIngredients), effectsBox=craftNode('div');preview.append(effectsBox);
     const slots=craftNode('p',null,'effect-slot-meter'), status=craftNode('p',null,'craft-help');preview.append(slots,status);
     let brew;
-    const refresh=()=>{const f=Crafting.formula(this.brewIngredients,this.brewEffects,s.alchemy);const used=this.brewEffects.reduce((n,k)=>n+(candidates.find(e=>e.key===k)?.slots||0),0);slots.textContent=`${'▣ '.repeat(Math.min(used,5))}${'□ '.repeat(Math.max(0,5-used))} ${used}/5 effect slots`;status.textContent=f.error||`Legal formula · Alchemy ${f.required}+ · 2 successes needed`;brew.disabled=!!f.error||!s.stations.includes('kit')||c.conditions.fatigue>=c.attributes.endurance;};
+    const refresh=()=>{const f=Crafting.formula(this.brewIngredients,this.brewEffects,s.alchemy,this.brewEnhancements);const used=this.brewEffects.reduce((n,k)=>n+(candidates.find(e=>e.key===k)?.slots||0),0);slots.textContent=`${'▣ '.repeat(Math.min(used,5))}${'□ '.repeat(Math.max(0,5-used))} ${used}/5 effect slots`;status.textContent=f.error||`Legal formula · Alchemy ${f.required}+ · 2 successes needed`;brew.disabled=!!f.error||!s.stations.includes('kit')||c.conditions.fatigue>=c.attributes.endurance;};
     candidates.forEach(effect=>{
       const label=craftNode('label',null,`effect-card ${effect.rarity}`), check=craftNode('input');check.type='checkbox';check.checked=this.brewEffects.includes(effect.key);
-      const content=craftNode('span');content.append(craftNode('strong',`${effect.rarity.toUpperCase()} · ${effect.slots} slot${effect.slots>1?'s':''}`),craftNode('span',effect.text),craftNode('small',`Matching sources: ${effect.sources.join(', ')}`));label.append(check,content);effectsBox.append(label);
+      const content=craftNode('span');content.append(craftNode('strong',`${effect.rarity.toUpperCase()} · ${effect.slots} slot${effect.slots>1?'s':''}`),craftNode('span',Crafting.enhance(effect,this.brewEnhancements[effect.key]||(Crafting.canEnhancePotency(effect)&&!effect.text.includes('rounds')?'potency':'duration')).text),craftNode('small',`Matching sources: ${effect.sources.join(', ')}`));label.append(check,content);effectsBox.append(label);
+      if(effect.triplet) {
+        const enhanceLabel=craftNode('label','Triplet bonus ', 'triplet-choice'), select=craftNode('select');select.setAttribute('aria-label',`Triplet bonus: ${effect.text}`);
+        for(const [value,text] of [['duration','+2 rounds'],['potency','+1 potency']]) {const option=craftNode('option',text);option.value=value;option.disabled=value==='potency'?!Crafting.canEnhancePotency(effect):!effect.text.includes('rounds');select.append(option);}
+        select.value=this.brewEnhancements[effect.key]||(effect.text.includes('rounds')?'duration':'potency');enhanceLabel.append(select);effectsBox.append(enhanceLabel);
+        select.addEventListener('change',()=>{this.brewEnhancements[effect.key]=select.value;this.renderCharacterSheet();});
+      }
       check.addEventListener('change',()=>{this.brewEffects=check.checked?[...this.brewEffects,effect.key]:this.brewEffects.filter(k=>k!==effect.key);refresh();});
     });
-    brew=button(preview,'Brew potion',()=>{const result=Crafting.brew(c,this.brewIngredients,this.brewEffects);this.brewIngredients=[];this.brewEffects=[];return result;});
+    brew=button(preview,'Brew potion',()=>{const result=Crafting.brew(c,this.brewIngredients,this.brewEffects,Math.random,this.brewEnhancements);this.brewIngredients=[];this.brewEffects=[];return result;});
     button(preview,'Clear vessel',()=>{this.brewIngredients=[];this.brewEffects=[];return 'Vessel cleared.';});
     if(!s.stations.includes('kit'))preview.append(craftNode('p','Work at an alchemy bench, or bring alchemy tools to your campsite.','craft-help'));refresh();
     const active=Crafting.effects(c);if(active.length)body.append(craftNode('p',`Active potions: ${active.map(e=>`${e.text} (${e.remaining} rounds)`).join(' · ')}`,'craft-help'));
@@ -87,7 +101,7 @@ GameUI.prototype.ensureCharacterState=function(c) { originalEnsureCharacterState
 const originalUseInventory=GameUI.prototype.useInventoryItem;
 GameUI.prototype.useInventoryItem=function(c,r) { if(!r.potionEffects)return originalUseInventory.call(this,c,r);try {this.inventoryNotice=Crafting.drink(c,r);this.recalculateCharacterConditions(c);}catch(e){this.inventoryNotice=e.message;} };
 const originalCraftMenuConditions=GameUI.prototype.recalculateCharacterConditions;
-GameUI.prototype.recalculateCharacterConditions=function(c) {originalCraftMenuConditions.call(this,c);if(Crafting.has(c,'delay 8 pain'))c.conditions.pain=Math.max(0,c.conditions.pain-8);if(Crafting.has(c,'delay 8 blood loss'))c.conditions.bleeding=Math.max(0,c.conditions.bleeding-8);};
+GameUI.prototype.recalculateCharacterConditions=function(c) {originalCraftMenuConditions.call(this,c);c.conditions.pain=Math.max(0,c.conditions.pain-Crafting.delayAmount(c,'pain'));c.conditions.bleeding=Math.max(0,c.conditions.bleeding-Crafting.delayAmount(c,'blood loss'));};
 const originalToggleEquip=GameUI.prototype.toggleEquippedItem;
 GameUI.prototype.toggleEquippedItem=function(c,r,item) {if(r.durability<=1||r.destroyed){this.inventoryNotice='Broken or destroyed weapons cannot be equipped.';return;}originalToggleEquip.call(this,c,r,item);};
 const originalKeyDown=GameUI.prototype.handleKeyDown;

@@ -37,7 +37,7 @@ const ALCHEMY_INGREDIENTS = [
     "name": "Arenaria",
     "clue": "This humble flower clings to stone and survives where weaker things fall.",
     "rare": "ignore knockout for 2 rounds",
-    "uncommon": "add 2 cp for 2 rounds while wounded",
+    "uncommon": "add 2 cp for 2 rounds while enemy is wounded",
     "common": "remove 2 wounds"
   },
   {

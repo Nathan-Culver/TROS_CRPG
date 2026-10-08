@@ -8,13 +8,13 @@ Crafting.attackModifier=function(b,actor,maneuver,opponent=b.enemy) {
     if(!t.startsWith('lower')||!t.includes('attacks'))continue;
     if(t.includes('against unwounded')&&wounded||t.includes('against wounded')&&!wounded)continue;
     if(t.includes('thrust')&&!maneuver.thrust||t.includes('blunt')&&!maneuver.bash||t.includes('cuts')&&(maneuver.thrust||maneuver.bash))continue;
-    modifier--; // Identical effects are deduplicated when drinking.
+    modifier-=Number(t.match(/\d+/)[0]); // Identical effects are deduplicated when drinking.
   }
   return modifier;
 };
 Crafting.defenseModifier=function(b,actor,m) {
   if(actor!==b.player)return 0;
-  return -this.effects(b.character).filter(e=>e.text.startsWith('lower')&&(e.text.includes('defenses')||e.text.includes('shield')&&(m.block||m.requiresShield)||e.text.includes('block')&&m.block||e.text.includes('parries')&&m.usesWeaponTarget)).length;
+  return -this.effects(b.character).filter(e=>e.text.startsWith('lower')&&(e.text.includes('defenses')||e.text.includes('shield')&&(m.block||m.requiresShield)||e.text.includes('block')&&m.block||e.text.includes('parries')&&m.usesWeaponTarget)).reduce((n,e)=>n+Number(e.text.match(/\d+/)[0]),0);
 };
 Crafting.cpBonus=function(b,action,opponent=b.enemy) {
   const ownWounded=b.player.wounds.length>0,enemyWounded=opponent?.wounds?.length>0;
@@ -32,8 +32,8 @@ Crafting.cpBonus=function(b,action,opponent=b.enemy) {
   return bonus;
 };
 Crafting.traitBonus=function(c,trait) {
-  let bonus=this.effects(c).some(e=>e.text.startsWith(`increase ${trait} by`))?1:0;
-  if(['reflex','knockdown'].includes(trait)&&this.has(c,'increase agility'))bonus+=.5;
+  let bonus=this.amount(c,`increase ${trait} by`);
+  if(['reflex','knockdown'].includes(trait) )bonus+=this.amount(c,'increase agility')/2;
   return bonus;
 };
 
@@ -49,8 +49,8 @@ if(originalStartCraftBattle)BattleSystem.prototype.startBattle=function(...args)
 const originalCraftRound=BattleSystem.prototype.beginRound;
 BattleSystem.prototype.beginRound=function(...args) {
   if(this._craftRound&&this._craftRound!==this.round) {
-    const delayed=Crafting.has(this.character,'delay 8 shock');Crafting.tick(this.character,this.player);
-    if(delayed&&!Crafting.has(this.character,'delay 8 shock')) {this.player.conditions.pendingShock=(this.player.conditions.pendingShock||0)+(this.character.crafting.delayedShock||0);this.character.crafting.delayedShock=0;}
+    const delayed=Crafting.delayAmount(this.character,'shock')>0;Crafting.tick(this.character,this.player);
+    if(delayed&&!Crafting.delayAmount(this.character,'shock')) {this.player.conditions.pendingShock=(this.player.conditions.pendingShock||0)+(this.character.crafting.delayedShock||0);this.character.crafting.delayedShock=0;}
   }
   if(this._craftRound!==this.round)this._craftConditionalUsed=0;
   this._craftRound=this.round;
@@ -62,8 +62,8 @@ const originalCraftTotals=BattleSystem.prototype.recalculateConditionTotals;
 BattleSystem.prototype.recalculateConditionTotals=function(actor) {
   originalCraftTotals.call(this,actor);
   if(actor!==this.player)return;
-  if(Crafting.has(this.character,'delay 8 pain'))actor.conditions.pain=Math.max(0,actor.conditions.pain-8);
-  if(Crafting.has(this.character,'delay 8 blood loss'))actor.conditions.bleeding=Math.max(0,actor.conditions.bleeding-8);
+  actor.conditions.pain=Math.max(0,actor.conditions.pain-Crafting.delayAmount(this.character,'pain'));
+  actor.conditions.bleeding=Math.max(0,actor.conditions.bleeding-Crafting.delayAmount(this.character,'blood loss'));
   // This game models limb impairment through location-specific Pain.
   if(Crafting.has(this.character,'ignore crippled limb')) {const limbPain=actor.wounds.filter(w=>['arms','legs'].includes(w.bodyZone)).reduce((n,w)=>n+(w.pain||0),0);actor.conditions.pain=Math.max(0,actor.conditions.pain-limbPain);}
 };
@@ -74,7 +74,7 @@ BattleSystem.prototype.refreshConditionPools=function(actor) {
   const negateTerrain=Crafting.has(this.character,'ignore terrain penalties');
   const terrain=this.craftTerrain||{penalty:0,enemyBonus:0};
   if(actor!==this.player){if(!negateTerrain){actor.pool+=terrain.enemyBonus;actor.maxPool+=terrain.enemyBonus;}return;}
-  const armor=Crafting.has(this.character,'lessen armor')?Math.min(1,actor.encumbrancePenalty):0;
+  const armor=Crafting.has(this.character,'lessen armor')?Math.min(Crafting.amount(this.character,'lessen armor'),actor.encumbrancePenalty):0;
   const bonus=Crafting.cpBonus(this,'pool')+armor+Math.floor(Crafting.traitBonus(this.character,'reflex'));
   actor.pool=Math.max(0,actor.pool+bonus-(negateTerrain?0:terrain.penalty));actor.maxPool=Math.max(0,actor.maxPool+bonus-(negateTerrain?0:terrain.penalty));
 };
@@ -99,11 +99,12 @@ BattleSystem.prototype.getWoundEffects=function(target,severity,type,zone) {
 };
 const originalCraftImmediateShock=BattleSystem.prototype.applyImmediateShock;
 BattleSystem.prototype.applyImmediateShock=function(target,wound) {
-  if(target!==this.player||!Crafting.has(this.character,'delay 8 shock'))return originalCraftImmediateShock.call(this,target,wound);
+  const delay=Crafting.delayAmount(this.character,'shock');
+  if(target!==this.player||!delay)return originalCraftImmediateShock.call(this,target,wound);
   const saved=target.wounds.map(w=>[w,w.shock]);
-  const deferred=Math.min(8,Math.max(...saved.map(([,n])=>n||0)));
+  const deferred=Math.min(delay,Math.max(...saved.map(([,n])=>n||0)));
   this.character.crafting.delayedShock=Math.max(this.character.crafting.delayedShock||0,deferred);
-  saved.forEach(([w,n])=>w.shock=Math.max(0,n-8));
+  saved.forEach(([w,n])=>w.shock=Math.max(0,n-delay));
   try{return originalCraftImmediateShock.call(this,target,wound);}finally{saved.forEach(([w,n])=>w.shock=n);}
 };
 for(const [method,text] of [['resolveKnockdown','ignore knockdown'],['resolveKnockout','ignore knockout']]) {
@@ -133,10 +134,10 @@ BattleSystem.prototype.useBattleInventoryItem=function(id) {
   if(!r?.potionEffects)return originalCraftInventoryBattle.call(this,id);
   if(this.isResolving||this.battleEnded)return;
   try {
-    const before=Crafting.cpBonus(this,'pool')+(Crafting.has(this.character,'lessen armor')?Math.min(1,this.player.encumbrancePenalty):0)+Math.floor(Crafting.traitBonus(this.character,'reflex'));
+    const before=Crafting.cpBonus(this,'pool')+(Crafting.has(this.character,'lessen armor')?Math.min(Crafting.amount(this.character,'lessen armor'),this.player.encumbrancePenalty):0)+Math.floor(Crafting.traitBonus(this.character,'reflex'));
     const terrainBefore=Crafting.has(this.character,'ignore terrain penalties');
     this.inventoryNotice.textContent=Crafting.drink(this.character,r,this.player);
-    const after=Crafting.cpBonus(this,'pool')+(Crafting.has(this.character,'lessen armor')?Math.min(1,this.player.encumbrancePenalty):0)+Math.floor(Crafting.traitBonus(this.character,'reflex'));
+    const after=Crafting.cpBonus(this,'pool')+(Crafting.has(this.character,'lessen armor')?Math.min(Crafting.amount(this.character,'lessen armor'),this.player.encumbrancePenalty):0)+Math.floor(Crafting.traitBonus(this.character,'reflex'));
     this.player.pool+=Math.max(0,after-before);this.player.maxPool+=Math.max(0,after-before);
     if(!terrainBefore&&Crafting.has(this.character,'ignore terrain penalties')) {const t=this.craftTerrain||{penalty:0,enemyBonus:0};this.player.pool+=t.penalty;this.player.maxPool+=t.penalty;this.enemies.forEach(enemy=>{enemy.pool=Math.max(0,enemy.pool-t.enemyBonus);enemy.maxPool=Math.max(0,enemy.maxPool-t.enemyBonus);});}
     this.recalculateConditionTotals(this.player);this.character.wounds=this.player.wounds.map(w=>({...w}));this.character.conditions={...this.player.conditions};localStorage.setItem('tros-character',JSON.stringify(this.character));this.addLog(`${this.player.name} drinks ${r.name}.`);this.renderBattleInventory();this.updateInterface();
