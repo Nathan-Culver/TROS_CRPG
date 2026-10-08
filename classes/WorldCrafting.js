@@ -21,17 +21,25 @@ class WorldCrafting {
     }
     this.objects=[];const reserved=[];
     const place=(id,kind,name,wanted,minSpacing=3,extra={})=>{
-      const tile=[...this.tiles].sort((a,b)=>(a.x-wanted.x)**2+(a.y-wanted.y)**2-((b.x-wanted.x)**2+(b.y-wanted.y)**2)).find(t=>t.d>1&&reserved.every(p=>Math.hypot(p.x-t.x,p.y-t.y)>=minSpacing));
+      const tile=[...this.tiles].sort((a,b)=>(a.x-wanted.x)**2+(a.y-wanted.y)**2-((b.x-wanted.x)**2+(b.y-wanted.y)**2)).find(t=>(t.d>1||kind==='station')&&reserved.every(p=>Math.hypot(p.x-t.x,p.y-t.y)>=minSpacing));
       if(!tile)return null;reserved.push(tile);const object={id,kind,name,x:tile.x*16+8,y:tile.y*16+8,tileX:tile.x,tileY:tile.y,...extra};this.objects.push(object);return object;
     };
     const spawn=PLAYER_SPAWN_TILE;
     this.camp=place('camp','camp','Your campsite',{x:spawn.x-4,y:spawn.y+2});
     this.smith=place('smith','smith','Village smith · tools & workshop rental',{x:spawn.x+7,y:spawn.y+2});
     const smithTile={x:this.smith.tileX,y:this.smith.tileY};
-    for(const [index,station] of Object.keys(CRAFT_STATIONS).entries())place(`public-${station}`,'station',CRAFT_STATIONS[station][0],{x:smithTile.x+(index%3-1)*2,y:smithTile.y+2+Math.floor(index/3)*2},1,{station,public:true});
+    // Two arms and a joined back, with a wide entrance beside the smith.
+    // Keep forge and hearth within combined-recipe reach from the inner corner.
+    const stationLayout=[['kit',-4,0],['bloomery',-4,3],['crucible',-2,5],['forge',2,5],['welding',4,3],['cementation',4,0]];
+    for(const [station,dx,dy] of stationLayout)place(`public-${station}`,'station',CRAFT_STATIONS[station][0],{x:smithTile.x+dx,y:smithTile.y+dy},2,{station,public:true});
     const campTile={x:this.camp.tileX,y:this.camp.tileY};
-    this.plots=Object.keys(CRAFT_STATIONS).map((station,index)=>place(`home-${station}`,'station',CRAFT_STATIONS[station][0],{x:campTile.x+(index%3-1)*2,y:campTile.y-2-Math.floor(index/3)*2},1,{station,home:true})).filter(Boolean);
-    this.fire=place('campfire','fire','Campfire · burn wood to charcoal',{x:campTile.x+3,y:campTile.y},2);
+    // Mirror the U at home so the campsite faces its open entrance.
+    this.plots=stationLayout.map(([station,dx,dy])=>place(`home-${station}`,'station',CRAFT_STATIONS[station][0],{x:campTile.x+dx,y:campTile.y-dy},2,{station,home:true})).filter(Boolean);
+    this.fire=place('campfire','fire','Campfire · burn wood to charcoal',{x:campTile.x+3,y:campTile.y+2},2);
+    const publicStations=this.objects.filter(o=>o.public);
+    this.workshopBounds={left:Math.min(this.smith.x,...publicStations.map(o=>o.x))-32,right:Math.max(this.smith.x,...publicStations.map(o=>o.x))+32,top:Math.min(this.smith.y,...publicStations.map(o=>o.y))-32,bottom:Math.max(this.smith.y,...publicStations.map(o=>o.y))+32};
+    // Leave the entrance and courtyard free of generated rocks, trees and bushes.
+    for(const [anchor,direction] of [[smithTile,1],[campTile,-1]])for(let dy=0;dy<=5;dy++)for(let dx=-4;dx<=4;dx++)reserved.push({x:anchor.x+dx,y:anchor.y+direction*dy});
     let serial=0;
     // Nodes are distributed over reachable tiles, including a useful starter trail.
     for(const t of this.tiles.filter(t=>t.d>=5&&t.d<=110).sort((a,b)=>a.d-b.d)) {
@@ -90,7 +98,8 @@ class WorldCrafting {
     const state=this.state();state.travel+=distance;this.travelSinceSave+=distance;
     if(distance>0&&!battleSystem.isActive&&gameUI.isMapActive())this.grassForage(distance);
     if(this.rental&&this.rental!==gameUI.character)this.rental=null;
-    if(this.rental&&this.distance(this.smith)>100){this.rental=null;this.message('You leave the workshop. Your rental visit has ended.');}
+    const grounds=this.workshopBounds,p=player.center;
+    if(this.rental&&(p.x<grounds.left||p.x>grounds.right||p.y<grounds.top||p.y>grounds.bottom)){this.rental=null;this.message('You leave the workshop. Your rental visit has ended.');}
     this.guide.hidden=!gameUI.isMapActive()||battleSystem.isActive;const direction=o=>{const dx=o.x-player.center.x,dy=o.y-player.center.y;return Math.abs(dx)>Math.abs(dy)?(dx>0?'→':'←'):(dy>0?'↓':'↑');};this.guide.textContent=`Camp ${direction(this.camp)} ${Math.ceil(this.distance(this.camp)/16)} tiles · Smith ${direction(this.smith)} ${Math.ceil(this.distance(this.smith)/16)} tiles`;
     const near=this.nearby();this.hint.hidden=!gameUI.isMapActive()||battleSystem.isActive||!near;
     if(near)this.hint.textContent=`E · ${near.name}${this.depleted(near)?' (depleted)':''}`;

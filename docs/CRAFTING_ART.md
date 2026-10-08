@@ -9,3 +9,7 @@ Created with the built-in ImageGen tool, using `images/crafting/smithing.webp` a
 Prompt: Create a production-ready transparent nine-prop atlas matching the provided detailed medieval pixel-art references, arranged as three columns and three rows: Bloomery/Cementation/Crucible furnaces; Forge/Welding Hearth/Anvil; Alchemy Workbench/Campfire/Quenching Trough. Use textured dark masonry, shaded steel and oak, natural ember flames, consistent oblique top-down perspective and crisp pixel clusters. Keep all props separate with transparent margins; no poster labels, panels, borders, ground tiles or flat geometric placeholders.
 
 Verified in the running game: transparent asset loading, separate station frames, map scale, visible forge/anvil and alchemy details, working station interactions, and absence of JavaScript or asset-request errors.
+
+## Workshop layout
+
+The village workshop now forms a U with the smith at its open entrance, two stations on each arm and two across its back. The buildable campsite stations use the mirrored layout, opening toward camp. Space between stations and the central courtyard remains clear of generated resource nodes. Forge and welding hearth remain close enough for combined recipes. Rental grounds follow the whole workshop footprint, so walking between its stations preserves rental access. Existing built-station IDs and save data are retained. Verified actual player collision movement and E interaction at all twelve stations, combined-station access, rental boundaries and absence of JavaScript/asset errors.
