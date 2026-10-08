@@ -1,0 +1,398 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Riddle of Steel</title>
+<link rel="stylesheet" href="./css/menu.css?v=pencil-armor-map-2026-08-09" />
+<link rel="stylesheet" href="./css/battle.css?v=visible-battle-actions-v4-2026-08-09" />
+<link rel="stylesheet" href="./css/crafting.css?v=2026-10-07" />
+<link rel="stylesheet" href="./css/world-crafting.css?v=2026-10-07-world" />
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    vertical-align: baseline;
+  }
+  body {
+    background: black;
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  canvas {
+    width: 1024px;
+    height: 576px;
+  }
+</style>
+<canvas style="image-rendering: pixelated"></canvas>
+<div class="map-hint" aria-hidden="true">WASD Move&nbsp;&nbsp;|&nbsp;&nbsp;E Interact&nbsp;&nbsp;|&nbsp;&nbsp;C Character / Crafting</div>
+
+<section id="start-screen" class="game-overlay start-screen" aria-label="Start menu">
+  <div class="start-crest"><span>TROS</span></div>
+  <p class="eyebrow">Roleplaying with an edge</p>
+  <h1>The Riddle of Steel</h1>
+  <p class="start-subtitle">A tale is forged by the choices made before steel is drawn.</p>
+  <p class="press-space">Press Spacebar to begin</p>
+</section>
+
+<section id="character-builder" class="game-overlay builder-screen" aria-label="Character builder" hidden>
+  <form id="character-builder-form" class="builder-card">
+    <header class="builder-header">
+      <div>
+        <p class="eyebrow">The Birth of a Legend</p>
+        <h1>Character Builder</h1>
+      </div>
+      <div class="builder-budget"><span>Character points</span><strong id="character-point-total">70 / 70</strong></div>
+    </header>
+
+    <div class="builder-columns">
+      <div class="builder-column">
+        <fieldset>
+          <legend>Identity</legend>
+          <div class="identity-grid">
+            <label class="identity-wide">Character name <input id="character-name" maxlength="50" value="Wayfarer" placeholder="Enter the character's name" required /></label>
+            <label class="identity-wide">Concept <input id="character-concept" maxlength="80" value="Barbarian wanderer" placeholder="Describe any character concept" /></label>
+            <label>Nationality <input id="character-nationality" maxlength="40" value="Weyrthian" /></label>
+            <label>Sex
+              <select id="character-sex">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Nonbinary</option>
+              </select>
+            </label>
+            <label>Age <input id="character-age" type="number" min="1" max="120" value="25" /></label>
+            <label>Height <input id="character-height" maxlength="20" value="5 ft 10 in" /></label>
+            <label>Weight <input id="character-weight" maxlength="20" value="180 lb" /></label>
+            <label>Religion <input id="character-religion" maxlength="50" value="None" /></label>
+            <label>Liege <input id="character-liege" maxlength="50" value="None" /></label>
+            <label>Insight (1 CP each) <input id="character-insight" type="number" min="0" value="0" /></label>
+          </div>
+          <div class="character-appearance-picker">
+            <span class="character-appearance-label">Character sprite</span>
+            <div id="character-sprite-grid" class="character-sprite-grid" role="radiogroup" aria-label="Choose character sprite"></div>
+          </div>
+          <label>Philosophy <input id="character-philosophy" maxlength="72" value="Stand and fight." /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Character Point Allocation</legend>
+          <p class="builder-help">Spend the full available budget. Insight and Character Points convert 1:1; inherited Insight may raise the budget above 70.</p>
+          <div class="priority-grid">
+            <label>Race <select disabled><option>Human (0)</option></select></label>
+            <label>Social class <select id="social-class"></select></label>
+          </div>
+          <p id="point-buy-summary" class="builder-summary"></p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Training and equipment</legend>
+          <div class="training-grid">
+            <label>Primary weapon <select id="primary-weapon"></select></label>
+            <label>Primary proficiency <input id="primary-proficiency" type="number" min="0" max="8" value="7" /></label>
+            <label>Secondary weapon <select id="secondary-weapon"></select></label>
+            <label>Secondary proficiency <input id="secondary-proficiency" type="number" min="0" max="8" value="0" /></label>
+            <label>Equipped armor
+              <select id="character-armor"></select>
+            </label>
+            <label>Damage rules
+              <select id="damage-rules">
+                <option value="core">Core rulebook</option>
+                <option value="companion">Companion variant</option>
+              </select>
+            </label>
+          </div>
+          <p id="proficiency-summary" class="builder-summary"></p>
+        </fieldset>
+
+        <fieldset class="armor-coverage-builder">
+          <legend>Armor Coverage</legend>
+          <p class="builder-help">Purchased minor pieces supplement the equipped armor loadout. Gold shows owned protection; blue previews the armor currently selected in the shop.</p>
+          <div class="armor-coverage-layout">
+            <svg class="armor-body-map" viewBox="0 0 360 310" role="img" aria-labelledby="armor-map-title armor-map-description">
+              <title id="armor-map-title">Front and back armor coverage</title>
+              <desc id="armor-map-description">Pencil-sketch front and back anatomical mannequins divided into interactive armor regions. Protected regions are highlighted as armor is selected or purchased.</desc>
+              <text x="90" y="14" class="armor-map-label">Front</text>
+              <text x="270" y="14" class="armor-map-label">Back</text>
+
+              <g class="armor-figure armor-figure-front">
+                <path data-armor-zone="head" d="M74 38 C74 23 80 16 90 16 C100 16 106 23 106 38 C106 52 100 60 90 60 C80 60 74 52 74 38 Z" />
+                <path data-armor-zone="face" d="M79 35 C80 27 84 23 90 23 C96 23 100 27 101 35 C101 47 97 53 90 55 C83 53 79 47 79 35 Z" />
+                <path data-armor-zone="neck" d="M82 57 L98 57 L100 72 Q90 78 80 72 Z" />
+                <path data-armor-zone="shoulders" d="M80 68 Q69 71 59 75 Q50 78 48 88 L63 98 Q67 85 73 83 L90 80 L107 83 Q113 85 117 98 L132 88 Q130 78 121 75 Q111 71 100 68 Q90 76 80 68 Z" />
+                <path data-armor-zone="chest" d="M68 82 Q78 77 90 80 Q102 77 112 82 L116 119 Q103 128 90 124 Q77 128 64 119 Z" />
+                <path data-armor-zone="abdomen" d="M64 119 Q77 124 90 124 Q103 124 116 119 L112 166 Q101 173 90 170 Q79 173 68 166 Z" />
+                <path data-armor-zone="upperArms" d="M49 87 Q58 82 66 91 L63 126 Q59 139 51 137 Q44 135 45 124 Z" />
+                <path data-armor-zone="upperArms" d="M131 87 Q122 82 114 91 L117 126 Q121 139 129 137 Q136 135 135 124 Z" />
+                <path data-armor-zone="forearms" d="M51 136 Q58 135 61 143 L57 185 Q53 195 46 190 Q41 187 44 178 Z" />
+                <path data-armor-zone="forearms" d="M129 136 Q122 135 119 143 L123 185 Q127 195 134 190 Q139 187 136 178 Z" />
+                <path data-armor-zone="hands" d="M45 187 Q50 190 57 185 L59 197 L55 212 L51 207 L48 214 L44 207 L41 196 Z" />
+                <path data-armor-zone="hands" d="M135 187 Q130 190 123 185 L121 197 L125 212 L129 207 L132 214 L136 207 L139 196 Z" />
+                <path data-armor-zone="hips" d="M68 164 Q78 169 90 170 Q102 169 112 164 L116 187 Q104 197 90 194 Q76 197 64 187 Z" />
+                <path data-armor-zone="thighs" d="M66 185 Q77 190 89 193 L87 240 Q82 251 73 244 Q67 225 64 202 Z" />
+                <path data-armor-zone="thighs" d="M114 185 Q103 190 91 193 L93 240 Q98 251 107 244 Q113 225 116 202 Z" />
+                <path data-armor-zone="knees" d="M72 241 Q79 247 87 240 L87 256 Q78 263 70 255 Z" />
+                <path data-armor-zone="knees" d="M108 241 Q101 247 93 240 L93 256 Q102 263 110 255 Z" />
+                <path data-armor-zone="shins" d="M70 254 Q78 260 87 254 L85 292 Q79 300 72 293 Z" />
+                <path data-armor-zone="shins" d="M110 254 Q102 260 93 254 L95 292 Q101 300 108 293 Z" />
+                <path data-armor-zone="feet" d="M72 290 Q79 296 85 290 L90 300 Q87 305 69 304 Q66 301 72 290 Z" />
+                <path data-armor-zone="feet" d="M108 290 Q101 296 95 290 L90 300 Q93 305 111 304 Q114 301 108 290 Z" />
+                <g class="armor-pencil-details" aria-hidden="true">
+                  <path d="M79 91 Q90 97 101 91 M72 111 Q81 106 89 111 M91 111 Q100 106 108 111 M90 105 L90 158 M80 133 Q90 137 100 133 M84 153 Q90 157 96 153" />
+                  <path d="M75 178 Q90 185 105 178 M48 160 L57 159 M123 159 L132 160 M72 230 Q78 234 86 230 M94 230 Q102 234 108 230" />
+                </g>
+              </g>
+
+              <g class="armor-figure armor-figure-back">
+                <path data-armor-zone="head" d="M254 38 C254 23 260 16 270 16 C280 16 286 23 286 38 C286 52 280 60 270 60 C260 60 254 52 254 38 Z" />
+                <path data-armor-zone="neck" d="M262 57 L278 57 L280 72 Q270 78 260 72 Z" />
+                <path data-armor-zone="shoulders" d="M260 68 Q249 71 239 75 Q230 78 228 88 L243 98 Q247 85 253 83 L270 80 L287 83 Q293 85 297 98 L312 88 Q310 78 301 75 Q291 71 280 68 Q270 76 260 68 Z" />
+                <path data-armor-zone="back" d="M248 82 Q258 77 270 80 Q282 77 292 82 L296 119 L292 166 Q281 173 270 170 Q259 173 248 166 L244 119 Z" />
+                <path data-armor-zone="upperArms" d="M229 87 Q238 82 246 91 L243 126 Q239 139 231 137 Q224 135 225 124 Z" />
+                <path data-armor-zone="upperArms" d="M311 87 Q302 82 294 91 L297 126 Q301 139 309 137 Q316 135 315 124 Z" />
+                <path data-armor-zone="forearms" d="M231 136 Q238 135 241 143 L237 185 Q233 195 226 190 Q221 187 224 178 Z" />
+                <path data-armor-zone="forearms" d="M309 136 Q302 135 299 143 L303 185 Q307 195 314 190 Q319 187 316 178 Z" />
+                <path data-armor-zone="hands" d="M225 187 Q230 190 237 185 L239 197 L235 212 L231 207 L228 214 L224 207 L221 196 Z" />
+                <path data-armor-zone="hands" d="M315 187 Q310 190 303 185 L301 197 L305 212 L309 207 L312 214 L316 207 L319 196 Z" />
+                <path data-armor-zone="hips" d="M248 164 Q258 169 270 170 Q282 169 292 164 L296 187 Q284 197 270 194 Q256 197 244 187 Z" />
+                <path data-armor-zone="thighs" d="M246 185 Q257 190 269 193 L267 240 Q262 251 253 244 Q247 225 244 202 Z" />
+                <path data-armor-zone="thighs" d="M294 185 Q283 190 271 193 L273 240 Q278 251 287 244 Q293 225 296 202 Z" />
+                <path data-armor-zone="knees" d="M252 241 Q259 247 267 240 L267 256 Q258 263 250 255 Z" />
+                <path data-armor-zone="knees" d="M288 241 Q281 247 273 240 L273 256 Q282 263 290 255 Z" />
+                <path data-armor-zone="shins" d="M250 254 Q258 260 267 254 L265 292 Q259 300 252 293 Z" />
+                <path data-armor-zone="shins" d="M290 254 Q282 260 273 254 L275 292 Q281 300 288 293 Z" />
+                <path data-armor-zone="feet" d="M252 290 Q259 296 265 290 L270 300 Q267 305 249 304 Q246 301 252 290 Z" />
+                <path data-armor-zone="feet" d="M288 290 Q281 296 275 290 L270 300 Q273 305 291 304 Q294 301 288 290 Z" />
+                <g class="armor-pencil-details" aria-hidden="true">
+                  <path d="M270 81 L270 162 M251 95 Q260 87 267 96 M289 95 Q280 87 273 96 M252 117 Q270 127 288 117 M255 145 Q270 151 285 145" />
+                  <path d="M251 176 Q260 168 270 180 Q280 168 289 176 M228 160 L237 159 M303 159 L312 160 M252 230 Q259 234 267 230 M273 230 Q281 234 288 230" />
+                </g>
+              </g>
+            </svg>
+            <div class="armor-coverage-details">
+              <div class="armor-coverage-legend"><span><i class="owned"></i>Owned</span><span><i class="preview"></i>Selected preview</span></div>
+              <h3 id="armor-preview-name">No armor selected</h3>
+              <p id="armor-preview-profile">Proficiency: None</p>
+              <p id="armor-preview-zones">Coverage: None</p>
+              <div id="armor-owned-summary" class="armor-owned-summary"></div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="builder-column attributes-panel">
+        <fieldset>
+          <legend>Attributes</legend>
+          <div class="attribute-toolbar">
+            <label>High attribute <select id="high-attribute"></select></label>
+            <button id="balance-attributes" type="button">Restore attribute defaults</button>
+          </div>
+          <div id="attribute-grid" class="attribute-grid"></div>
+          <p id="attribute-summary" class="builder-summary"></p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Background</legend>
+          <p class="builder-help">Choose up to four gifts/flaws. Gifts spend points; flaws return points.</p>
+          <div id="gift-flaw-grid" class="training-grid"></div>
+          <label>Gift / flaw details <input id="gift-flaw-notes" placeholder="Allies, enemy, phobia, reputation, oath, etc." /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Spiritual Attributes</legend>
+          <p class="builder-help">Choose five Spiritual Attributes and assign exactly 7 points. Oath and Passion may be selected more than once.</p>
+          <div id="spiritual-grid" class="spiritual-grid"></div>
+          <p id="spiritual-summary" class="builder-summary"></p>
+        </fieldset>
+
+        <fieldset class="equipment-builder">
+          <legend>Starting Equipment</legend>
+          <p class="builder-help">Spend the starting wealth granted by Social Class. Body armor, helmets, coifs, neck defenses, arm pieces, gloves, leg pieces, footwear, and shields are functional purchases grouped by armor proficiency.</p>
+          <div class="equipment-shop-controls">
+            <label>Category <select id="equipment-category"></select></label>
+            <label>Item <select id="equipment-item"></select></label>
+            <label>Qty <input id="equipment-quantity" type="number" min="1" max="99" value="1" /></label>
+            <button id="equipment-add" type="button">Purchase</button>
+          </div>
+          <p id="wealth-summary" class="builder-summary"></p>
+          <div id="equipment-cart" class="equipment-cart"></div>
+        </fieldset>
+
+        <div class="derived-card">
+          <span>Reflex <strong id="derived-reflex">0</strong></span>
+          <span>Combat Pool <strong id="derived-cp">0</strong></span>
+          <span>Missile Pool <strong id="derived-mp">0</strong></span>
+          <span>Armor Value <strong id="derived-armor">0</strong></span>
+        </div>
+        <p id="builder-error" class="builder-error" role="alert"></p>
+      </div>
+    </div>
+
+    <footer class="builder-footer">
+      <p>Unspent Character Points become Insight 1:1. Reflex = (Agility + Wit) / 2. Combat Pool = Reflex + proficiency, after armor.</p>
+      <button id="finish-character" class="menu-button" type="submit">Finish character and enter the map</button>
+    </footer>
+  </form>
+</section>
+
+<section id="character-menu" class="game-overlay character-menu" aria-label="Character menu" hidden>
+  <div class="character-sheet-card">
+    <header>
+      <div class="sheet-profile-heading">
+        <div class="barbarian-profile-art" role="img" aria-label="Selected character portrait"></div>
+        <h1 id="sheet-name">Wayfarer</h1>
+      </div>
+    </header>
+    <nav id="character-sheet-tabs" class="sheet-tabs" role="tablist" aria-label="Character sheet sections"></nav>
+    <div id="character-sheet-content" class="sheet-content"></div>
+    <footer><span>Press C or Escape to return</span></footer>
+  </div>
+</section>
+
+<section
+  id="battle-screen"
+  class="battle-screen"
+  aria-label="Melee battle"
+  aria-hidden="true"
+  hidden
+>
+  <div class="battle-stage">
+    <div id="battle-banner" class="battle-banner">Random encounter!</div>
+    <div id="battle-enemy-party" class="battle-enemy-party" aria-hidden="true"></div>
+    <div id="battle-player-sprite" class="battle-actor player" aria-hidden="true"></div>
+  </div>
+
+  <div class="battle-hud">
+    <div class="battle-panel battle-statuses">
+      <article class="combatant-card">
+        <h2 id="battle-player-name">Wayfarer</h2>
+        <div class="battle-stat"><span>Combat Pool</span><strong id="battle-player-pool">12 / 12</strong></div>
+        <div class="battle-stat"><span>Stance</span><strong id="battle-player-stance">Neutral</strong></div>
+        <div class="battle-stat"><span>Orientation</span><strong id="battle-orientation">Front</strong></div>
+        <div id="battle-player-wounds" class="wound-track"></div>
+      </article>
+
+      <article class="combatant-card enemy-summary-card">
+        <div class="enemy-count-heading"><span>Opponents</span><strong id="battle-enemy-count">1</strong></div>
+        <div id="battle-enemy-list" class="battle-enemy-list"></div>
+      </article>
+    </div>
+
+    <div class="battle-panel battle-controls">
+      <label class="battle-control">
+        Initiative
+        <select id="battle-intent">
+          <option value="red">Red — Attack</option>
+          <option value="white">White — Cautious</option>
+          <option value="blue">Blue — Defend</option>
+        </select>
+      </label>
+      <label class="battle-control">
+        Stance
+        <select id="battle-stance"></select>
+      </label>
+      <label class="battle-control">
+        Weapon
+        <select id="battle-weapon"></select>
+      </label>
+      <label class="battle-control">
+        Opponent
+        <select id="battle-opponent"></select>
+      </label>
+      <label class="battle-control">
+        Hit location
+        <select id="battle-target"></select>
+      </label>
+      <label class="battle-control">
+        Defense
+        <select id="battle-defense"></select>
+      </label>
+      <label class="battle-control">
+        Maneuver
+        <select id="battle-offense"></select>
+      </label>
+
+      <div class="dice-allocation">
+        <label for="battle-attack-dice">Attack commitment</label>
+        <input id="battle-attack-dice" type="range" min="0" max="12" value="6" />
+        <strong id="battle-attack-dice-value">6</strong>
+        <span>CP</span>
+        <label for="battle-defense-dice">Defense commitment</label>
+        <input id="battle-defense-dice" type="range" min="0" max="12" value="0" disabled />
+        <strong id="battle-defense-dice-value">6</strong>
+        <span>CP</span>
+      </div>
+
+      <label class="battle-control battle-preempt">
+        <input id="battle-buy-initiative" type="checkbox" />
+        Buy initiative when defending (cost: opponent's Perception)
+      </label>
+
+      <div class="battle-actions">
+        <button id="battle-resolve" class="battle-button" type="button">Resolve exchange</button>
+        <button id="battle-inventory-open" class="battle-button secondary" type="button">Inventory</button>
+        <button id="battle-flee" class="battle-button secondary" type="button">Disengage</button>
+        <button id="battle-escape" class="battle-button secondary" type="button">Flee battle</button>
+      </div>
+
+      <p id="battle-rules-note" class="battle-rules-note"></p>
+    </div>
+
+    <aside class="battle-panel battle-log-panel">
+      <h3>Exchange log</h3>
+      <div id="battle-log" class="battle-log" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <div id="battle-inventory-popup" class="battle-loot-popup battle-inventory-popup" role="dialog" aria-modal="true" aria-labelledby="battle-inventory-title" hidden>
+    <div class="battle-loot-card battle-inventory-card">
+      <p class="battle-loot-kicker">Carried equipment</p>
+      <h2 id="battle-inventory-title">Inventory</h2>
+      <p id="battle-inventory-wealth" class="battle-inventory-wealth"></p>
+      <p id="battle-inventory-notice" class="battle-inventory-notice" aria-live="polite"></p>
+      <div id="battle-inventory-list" class="battle-inventory-list"></div>
+      <button id="battle-inventory-close" class="battle-button" type="button">Return to battle</button>
+    </div>
+  </div>
+
+  <div id="battle-loot-popup" class="battle-loot-popup" role="dialog" aria-modal="true" aria-labelledby="battle-loot-title" hidden>
+    <div class="battle-loot-card">
+      <p class="battle-loot-kicker">Encounter rewards</p>
+      <h2 id="battle-loot-title">Recovered Loot</h2>
+      <ul id="battle-loot-list" class="battle-loot-list"></ul>
+      <button id="battle-loot-collect" class="battle-button" type="button">Collect loot</button>
+    </div>
+  </div>
+  <div id="battle-defeat-popup" class="battle-loot-popup battle-defeat-popup" role="dialog" aria-modal="true" aria-labelledby="battle-defeat-title" hidden>
+    <div class="battle-loot-card battle-defeat-card">
+      <p class="battle-loot-kicker">Defeat</p>
+      <h2 id="battle-defeat-title">You Died</h2>
+      <p id="battle-defeat-message" class="battle-defeat-message"></p>
+      <button id="battle-defeat-continue" class="battle-button" type="button">Continue</button>
+    </div>
+  </div>
+</section>
+<script src="./data/l_New_Layer_1.js"></script>
+<script src="./data/l_New_Layer_2.js"></script>
+<script src="./data/l_New_Layer_3.js"></script>
+<script src="./data/l_New_Layer_4.js"></script>
+<script src="./data/collisions.js"></script>
+<script src="./js/utils.js"></script>
+<script src="./data/characterSprites.js?v=uniform-map-scale-v2-2026-08-08"></script>
+<script src="./data/flowerOfBattle.js?v=full-rules-2026-08-06"></script>
+<script src="./classes/CollisionBlock.js"></script>
+<script src="./classes/Player.js?v=uniform-map-scale-v2-2026-08-08"></script>
+<script src="./classes/Sprite.js?v=tree-leaves-2026-08-05"></script>
+<script src="./classes/GameUI.js?v=crafting-2026-10-07"></script>
+<script src="./classes/BattleSystem.js?v=crafting-2026-10-07"></script>
+
+<script src="./data/craftingData.js?v=2026-10-07"></script>
+<script src="./classes/CraftingSystem.js?v=2026-10-07"></script>
+<script src="./classes/CraftingUI.js?v=2026-10-07-world"></script>
+<script src="./classes/CraftingCombat.js?v=2026-10-07"></script>
+<script src="./js/index.js?v=world-crafting-2026-10-07"></script>
+<script src="./classes/WorldCrafting.js?v=2026-10-08-art"></script>
+<script src="./js/eventListeners.js?v=world-crafting-2026-10-07"></script>

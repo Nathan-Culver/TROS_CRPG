@@ -1,0 +1,50 @@
+.crafting-section { font: 13px Georgia,serif; }
+.crafting-section h2 { color:var(--gold); }
+.crafting-section h3 { margin:10px 0; color:#e9d8aa; }
+.crafting-section p { line-height:1.5; }
+.crafting-section button,.crafting-section select,.crafting-section input[type=search] { padding:8px 10px; border:1px solid #736449; border-radius:3px; background:#202735; color:#f5ecd2; font:inherit; }
+.crafting-section button { cursor:pointer; margin:3px; }
+.crafting-section button:hover:not(:disabled),.crafting-section button.active { border-color:var(--gold);background:#3c3526; }
+.crafting-section button:disabled { opacity:.45;cursor:default; }
+.crafting-section :focus-visible { outline:2px solid #edcf81;outline-offset:2px; }
+.craft-help { color:#b7b5ac;margin:8px 0; }
+.craft-subtabs { display:flex;gap:6px;margin:10px 0;flex-wrap:wrap; }
+.craft-toolbar { display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0; }
+.brew-layout { display:grid;grid-template-columns:1fr 1.1fr;gap:14px;align-items:start; }
+.ingredient-shelf { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:310px;overflow:auto;padding:4px; }
+.ingredient-shelf input { grid-column:1/-1;min-width:0;width:100%; }
+.crafting-section .ingredient-card { text-align:left;margin:0;display:grid;grid-template-columns:32px 1fr;gap:5px;align-content:start; }
+.ingredient-card[hidden] { display:none!important; }
+.ingredient-card small { grid-column:1/-1;color:#bdb5a4;font-size:11px;line-height:1.4; }
+.crafting-section .ingredient-card.selected { border:2px solid #c9a75c;background:#38301e; }
+.ingredient-sprite { width:32px;height:32px;display:block;background-image:url('../images/crafting/ingredients.webp');background-size:360px 240px;image-rendering:pixelated; }
+.brew-preview,.craft-card { border:1px solid #655738;background:#101721;padding:12px;border-radius:4px;min-width:0; }
+.effect-card { display:flex;align-items:start;gap:8px;margin:8px 0;padding:9px;border-left:4px solid;border-radius:3px;line-height:1.4; }
+.effect-card span span,.effect-card small,.effect-card strong { display:block; }
+.effect-card strong { font-size:11px;letter-spacing:.05em; }
+.effect-card small { color:#c1beb7;font-size:11px;margin-top:5px; }
+.effect-card input { margin-top:3px;accent-color:#c9a75c;flex:none; }
+.effect-card.common { border-color:#42b483;background:#17382d; }
+.effect-card.uncommon { border-color:#488be3;background:#192e46; }
+.effect-card.rare { border-color:#a37aec;background:#30234a; }
+.effect-slot-meter { color:#e8c66f;font-size:16px;margin:10px 0; }
+.smith-layout { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0; }
+.craft-card label { display:block;margin:8px 0; }
+.craft-card select { display:block;width:100%;margin:5px 0; }
+.recipe-row { border-bottom:1px solid #3b3e44;padding:8px 0; }
+.recipe-row strong,.recipe-row small { display:block;line-height:1.4; }
+.recipe-row small { color:#bfb7a4;margin:5px 0; }
+.craft-history { margin-top:12px; }
+.craft-history summary { cursor:pointer;color:#c9a75c; }
+.craft-card + .craft-card { margin-top:12px; }
+.character-sheet-card { display:flex;flex-direction:column;height:100%;max-height:100%; }
+.character-sheet-card > header,.character-sheet-card > footer,.sheet-tabs { flex:none; }
+.sheet-content { flex:1;min-height:0;height:auto; }
+.character-sheet-card:has([data-sheet-tab=crafting].active) { width:min(980px,100%); }
+.character-sheet-card:has([data-sheet-tab=crafting].active) .barbarian-profile-art { width:64px;height:64px;min-width:64px; }
+.crafting-section .ingredient-card { min-height:104px; }
+.recipe-row .material-title { display:flex;align-items:center;gap:8px; }
+.material-sprite { display:block;flex:none;width:44px;height:28px;background-image:url('../images/crafting/smithing.webp');background-size:512px 410px;image-rendering:pixelated;border-radius:3px; }
+.effect-slot-meter { position:sticky;bottom:0;background:#101721;padding:6px;border-top:1px solid #655738; }
+@media(max-width:650px) { .brew-layout,.smith-layout { grid-template-columns:1fr; }.ingredient-shelf {max-height:240px;} }
+

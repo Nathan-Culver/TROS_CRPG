@@ -1,0 +1,11 @@
+tmp/
+work/
+outputs/
+TROS_TD_CRPG/
+*.zip
+*.log
+__pycache__/
+.DS_Store
+Thumbs.db
+.env
+.env.*
