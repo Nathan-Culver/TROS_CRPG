@@ -27,21 +27,44 @@ const MAP_HEIGHT = TILE_SIZE * MAP_ROWS
 const MAP_ASSET_VERSION = 'mapper-2026-08-05'
 
 // Stores the scene scale values used by the rest of this file.
-const SCENE_SCALE = 2 + dpr
+let SCENE_SCALE = 2 + dpr
 
 // Stores the viewport width values used by the rest of this file.
-const VIEWPORT_WIDTH = canvas.width / SCENE_SCALE
+let VIEWPORT_WIDTH = canvas.width / SCENE_SCALE
 // Stores the viewport height values used by the rest of this file.
-const VIEWPORT_HEIGHT = canvas.height / SCENE_SCALE
+let VIEWPORT_HEIGHT = canvas.height / SCENE_SCALE
 
 // Stores the scene center x values used by the rest of this file.
-const SCENE_CENTER_X = VIEWPORT_WIDTH / 2
+let SCENE_CENTER_X = VIEWPORT_WIDTH / 2
 // Stores the scene center y values used by the rest of this file.
-const SCENE_CENTER_Y = VIEWPORT_HEIGHT / 2
+let SCENE_CENTER_Y = VIEWPORT_HEIGHT / 2
 // Stores the max camera x values used by the rest of this file.
-const MAX_CAMERA_X = Math.max(0, MAP_WIDTH - VIEWPORT_WIDTH)
+let MAX_CAMERA_X = Math.max(0, MAP_WIDTH - VIEWPORT_WIDTH)
 // Stores the max camera y values used by the rest of this file.
-const MAX_CAMERA_Y = Math.max(0, MAP_HEIGHT - VIEWPORT_HEIGHT)
+let MAX_CAMERA_Y = Math.max(0, MAP_HEIGHT - VIEWPORT_HEIGHT)
+
+// Match the map to its displayed size without stretching tiles or sprites.
+const touchViewport = window.matchMedia('(any-pointer: coarse)')
+function resizeMapViewport() {
+  document.body.classList.toggle('touch-device', touchViewport.matches)
+  const frame = canvas.getBoundingClientRect()
+  canvas.width = Math.max(1, Math.round(frame.width * dpr))
+  canvas.height = Math.max(1, Math.round(frame.height * dpr))
+  c.imageSmoothingEnabled = false
+  SCENE_SCALE = touchViewport.matches ? 3 * dpr : 2 + dpr
+  VIEWPORT_WIDTH = canvas.width / SCENE_SCALE
+  VIEWPORT_HEIGHT = canvas.height / SCENE_SCALE
+  SCENE_CENTER_X = VIEWPORT_WIDTH / 2
+  SCENE_CENTER_Y = VIEWPORT_HEIGHT / 2
+  MAX_CAMERA_X = Math.max(0, MAP_WIDTH - VIEWPORT_WIDTH)
+  MAX_CAMERA_Y = Math.max(0, MAP_HEIGHT - VIEWPORT_HEIGHT)
+  document.documentElement.style.setProperty('--map-left', `${frame.left}px`)
+  document.documentElement.style.setProperty('--map-top', `${frame.top}px`)
+  document.documentElement.style.setProperty('--map-bottom', `${Math.max(0, window.innerHeight-frame.bottom)}px`)
+}
+resizeMapViewport()
+window.addEventListener('resize', resizeMapViewport)
+touchViewport.addEventListener('change', resizeMapViewport)
 
 // Associates each Mapper Mate tile layer with the exported tile-number array used to draw it.
 const layersData = {

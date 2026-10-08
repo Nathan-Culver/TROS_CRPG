@@ -39,3 +39,7 @@ GitHub Pages serves `main` from the repository root. `.nojekyll` ensures the gam
 - `docs/`: crafting rules, world interactions, design assumptions and sprite provenance.
 
 Old ZIP backups, scratch output and the inactive nested `TROS_TD_CRPG` copy are retained locally and excluded from version control. This repository contains the complete current playable game.
+
+## Mobile play
+
+Tap Begin your journey to start. Touch devices display a translucent direction pad and Interact/Character buttons on the map. Hold to walk, release to stop. Use Return to world to close the character sheet. Portrait and landscape layouts adapt to your screen; battle and crafting panels scroll and remain touch accessible. See [Mobile support](docs/MOBILE_SUPPORT.md).

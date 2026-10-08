@@ -51,6 +51,9 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     lastTime = performance.now()
   }
+  else Object.values(keys).forEach(key => { key.pressed = false })
 })
+
+window.addEventListener('blur', () => Object.values(keys).forEach(key => { key.pressed = false }))
 
 

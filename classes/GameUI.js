@@ -364,7 +364,7 @@ class GameUI {
     return this.mode !== 'map'
   }
   // Hides the title screen, opens the Character Builder, and focuses the character-name field.
-  showBuilder() { this.mode = 'builder'; this.startScreen.hidden = true; this.builderScreen.hidden = false; document.querySelector('#character-name').focus() }
+  showBuilder(focusName = true) { this.mode = 'builder'; this.startScreen.hidden = true; this.builderScreen.hidden = false; if (focusName) document.querySelector('#character-name').focus() }
   // Checks whether map active is true.
   isMapActive() { return this.mode === 'map' }
   // Returns the current character.
@@ -986,7 +986,7 @@ class GameUI {
     this.onEnterMap(this.character)
   }
   // Selects sheet tab and displays its content.
-  selectSheetTab(id) { this.activeSheetTab = id; this.sheetTabs.querySelectorAll('[data-sheet-tab]').forEach((tab) => { const active = tab.dataset.sheetTab === id; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)) }); this.sheetContent.querySelectorAll('[data-sheet-panel]').forEach((panel) => { panel.hidden = panel.dataset.sheetPanel !== id }); this.sheetContent.scrollTop = 0 }
+  selectSheetTab(id) { this.activeSheetTab = id; this.sheetTabs.querySelectorAll('[data-sheet-tab]').forEach((tab) => { const active = tab.dataset.sheetTab === id; tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active)) }); this.sheetContent.querySelectorAll('[data-sheet-panel]').forEach((panel) => { panel.hidden = panel.dataset.sheetPanel !== id }); this.sheetContent.scrollTop = 0; if (window.matchMedia('(max-width:760px), (any-pointer:coarse), (max-height:560px)').matches) this.sheetTabs.querySelector('.active')?.scrollIntoView({block:'nearest',inline:'nearest'}) }
   // Creates a new sheet section with the supplied values.
   createSheetSection(title, rows, id) { const section = document.createElement('section'); section.className = 'sheet-section'; section.dataset.sheetPanel = id; section.setAttribute('role', 'tabpanel'); const heading = document.createElement('h2'); heading.textContent = title; section.appendChild(heading); rows.forEach(([label, value]) => { if (label === '__heading__') { const subheading = document.createElement('h3'); subheading.className = 'sheet-subheading'; subheading.textContent = value; section.appendChild(subheading); return } const row = document.createElement('div'); row.className = 'sheet-row'; const name = document.createElement('span'); name.textContent = label; const detail = document.createElement('strong'); detail.textContent = String(value); row.append(name, detail); section.appendChild(row) }); return section }
 }

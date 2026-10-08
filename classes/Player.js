@@ -147,25 +147,25 @@ class Player {
     this.velocity.x = 0
     this.velocity.y = 0
 
-    if (keys.d.pressed) {
+    if (keys.d.pressed || keys.d.touchPressed) {
       this.velocity.x = X_VELOCITY
 
       this.currentSprite = this.sprites.walkRight
       this.currentSprite.frameCount = PLAYER_WALK_FRAMES.length
       this.facing = 'right'
-    } else if (keys.a.pressed) {
+    } else if (keys.a.pressed || keys.a.touchPressed) {
       this.velocity.x = -X_VELOCITY
 
       this.currentSprite = this.sprites.walkLeft
       this.currentSprite.frameCount = PLAYER_WALK_FRAMES.length
       this.facing = 'left'
-    } else if (keys.w.pressed) {
+    } else if (keys.w.pressed || keys.w.touchPressed) {
       this.velocity.y = -Y_VELOCITY
 
       this.currentSprite = this.sprites.walkUp
       this.currentSprite.frameCount = PLAYER_WALK_FRAMES.length
       this.facing = 'up'
-    } else if (keys.s.pressed) {
+    } else if (keys.s.pressed || keys.s.touchPressed) {
       this.velocity.y = Y_VELOCITY
 
       this.currentSprite = this.sprites.walkDown
